@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">LifeCycle</string>
+    <string name="start_activity">启动第二个</string>
+</resources>

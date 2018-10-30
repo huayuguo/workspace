@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.hcn.huangchao.misdevtest.MainActivity">
+
+    <Button
+        android:id="@+id/ircut_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="8dp"
+        android:text="IR-CUT ON" />
+
+
+    <Button
+        android:id="@+id/laser_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="8dp"
+        android:text="Laser ON" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="感光阈值 " />
+
+    <TextView
+        android:id="@+id/sensor_size"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="500 " />
+
+    <SeekBar
+        android:id="@+id/lightBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="1000"
+        android:progress="500" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="公差" />
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="number"
+        android:text="100" />
+
+    <Button
+        android:id="@+id/applyBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="应用" />
+
+</LinearLayout>
