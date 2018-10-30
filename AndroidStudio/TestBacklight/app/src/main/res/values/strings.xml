@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">TestBacklight</string>
+    <string name="brightness">Brightness:</string>
+    <string name="test">Test</string>
+    <string name="mode">Mode</string>
+    <string name="textview">TextView</string>
+    <string name="system_brightness">System Brightness:</string>
+    <string name="activity_brightness">Activity Brightness</string>
+    <string name="stop_activity_brightness">Stop Activity Brightness</string>
+</resources>
