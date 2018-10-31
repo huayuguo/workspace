@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+
+	<RelativeLayout
+		android:id="@+id/controlPanel"
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+		android:layout_alignParentRight="true"
+		android:orientation="vertical"
+		tools:layout_marginRight="10dp">
+
+		<Button
+			android:id="@+id/captureButton"
+			android:layout_width="120dp"
+			android:layout_height="wrap_content"
+			android:layout_alignParentStart="true"
+			android:layout_alignParentTop="true"
+			android:layout_marginStart="0dp"
+			android:layout_marginTop="40dp"
+			android:text="@string/capture" />
+
+		<Button
+			android:id="@+id/galleryButton"
+			android:layout_width="120dp"
+			android:layout_height="wrap_content"
+			android:layout_below="@+id/captureButton"
+			android:layout_alignParentStart="true"
+			android:layout_marginStart="0dp"
+			android:layout_marginTop="40dp"
+			android:text="@string/gallery" />
+
+		<Button
+			android:id="@+id/adviceButton"
+			android:layout_width="120dp"
+			android:layout_height="wrap_content"
+			android:layout_above="@+id/printButton"
+			android:layout_marginStart="0dp"
+			android:layout_marginBottom="40dp"
+			android:text="@string/advice" />
+
+		<Button
+			android:id="@+id/printButton"
+			android:layout_width="120dp"
+			android:layout_height="wrap_content"
+			android:layout_alignParentStart="true"
+			android:layout_alignParentBottom="true"
+			android:layout_marginStart="0dp"
+			android:layout_marginBottom="40dp"
+			android:text="@string/print" />
+
+	</RelativeLayout>
+
+    <com.camera.simplewebcam.CameraPreview
+		android:id="@+id/cp"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android_layout_toLeftOf="@id/controlPanel"
+        android:layout_marginRight="140dp"
+        />
+</RelativeLayout>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	android:title="@string/advice">
+    <EditTextPreference
+        android:key="doctor"
+        android:title="@string/doctor"
+        android:summary="@string/unknow"
+        />
+    <!--<ListPreference
+        android:key="attitude"
+        android:title="@string/attitude"
+        android:entries="@array/attitude_list"
+        android:entryValues="@array/attitude_values"
+        android:dialogTitle="attitude"
+        android:defaultValue="1"
+        />
+    <ListPreference
+        android:key="project"
+        android:title="@string/project"
+        android:entries="@array/program_list"
+        android:entryValues="@array/program_values"
+        android:dialogTitle="project"
+        android:defaultValue="1"
+        />-->
+    <EditTextPreference
+        android:key="advice"
+        android:title="@string/advice"
+        android:summary="@string/unknow"
+        />
+</PreferenceScreen>
