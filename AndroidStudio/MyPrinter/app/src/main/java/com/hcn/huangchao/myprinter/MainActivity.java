@@ -44,8 +44,6 @@ public class MainActivity extends AppCompatActivity {
         myButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                doWebViewPrint();
-                createWebPrintJob(mWebView);
             }
         });
     }
@@ -115,54 +113,5 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    private WebView mWebView;
-
-    private void doWebViewPrint() {
-        // Create a WebView object specifically for printing
-        WebView webView = new WebView(getActivity());
-        webView.setWebViewClient(new WebViewClient() {
-
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                return false;
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                Log.i(TAG, "page finished loading " + url);
-                createWebPrintJob(view);
-                mWebView = null;
-            }
-        });
-
-        // Generate an HTML document on the fly:
-        String htmlDocument = "<html><body><h1>Test Content</h1><p>Testing, " +
-                "testing, testing...</p></body></html>";
-        webView.loadDataWithBaseURL(null, htmlDocument, "text/HTML", "UTF-8", null);
-        webView.loadDataWithBaseURL("file:///android_asset/images/", "file:///android_asset/images/demo.html",
-                "text/HTML", "UTF-8", null);
-
-        // Keep a reference to WebView object until you pass the PrintDocumentAdapter
-        // to the PrintManager
-        mWebView = webView;
-    }
-
-    private void createWebPrintJob(WebView webView) {
-
-        // Get a PrintManager instance
-        PrintManager printManager = (PrintManager) getActivity()
-                .getSystemService(Context.PRINT_SERVICE);
-
-        // Get a print adapter instance
-        PrintDocumentAdapter printAdapter = webView.createPrintDocumentAdapter();
-
-        // Create a print job with name and adapter instance
-        String jobName = getString(R.string.app_name) + " Document";
-        PrintJob printJob = printManager.print(jobName, printAdapter,
-                new PrintAttributes.Builder().build());
-
-        // Save the job object for later status checking
-        mPrintJobs.add(printJob);
     }
 }
