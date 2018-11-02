@@ -804,9 +804,16 @@ public class KeyEvent extends InputEvent implements Parcelable {
     public static final int KEYCODE_SYSTEM_NAVIGATION_LEFT = 282;
     /** Key code constant: Consumed by the system for navigation right */
     public static final int KEYCODE_SYSTEM_NAVIGATION_RIGHT = 283;
+	/** Key code constant: for cust */
+    public static final int KEYCODE_YJ_A = 2021;
+	public static final int KEYCODE_YJ_B = 2022;
+	public static final int KEYCODE_YJ_C = 2023;
+	public static final int KEYCODE_YJ_D = 2024;
+	public static final int KEYCODE_YJ_E = 2025;
+	public static final int KEYCODE_YJ_F = 2026;
     /** Key code constant: Show all apps
      * @hide */
-    public static final int KEYCODE_ALL_APPS = 284;
+    public static final int KEYCODE_ALL_APPS = 2027;
 
     private static final int LAST_KEYCODE = KEYCODE_ALL_APPS;
 

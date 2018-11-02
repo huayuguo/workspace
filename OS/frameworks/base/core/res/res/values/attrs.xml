@@ -1891,7 +1891,13 @@
         <enum name="KEYCODE_SYSTEM_NAVIGATION_DOWN" value="281" />
         <enum name="KEYCODE_SYSTEM_NAVIGATION_LEFT" value="282" />
         <enum name="KEYCODE_SYSTEM_NAVIGATION_RIGHT" value="283" />
-        <enum name="KEYCODE_ALL_APPS" value="284" />
+        <enum name="KEYCODE_YJ_A" value="2021" />
+        <enum name="KEYCODE_YJ_B" value="2022" />
+        <enum name="KEYCODE_YJ_C" value="2023" />
+        <enum name="KEYCODE_YJ_D" value="2024" />
+        <enum name="KEYCODE_YJ_E" value="2025" />
+        <enum name="KEYCODE_YJ_F" value="2026" />
+        <enum name="KEYCODE_ALL_APPS" value="2027" />
     </attr>
 
     <!-- ***************************************************************** -->
