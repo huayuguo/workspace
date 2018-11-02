@@ -16,23 +16,11 @@
 
 package vendor.mediatek.hardware.gnss@1.1;
 
-import android.hardware.gnss@1.0;
-import IVzwDebug;
-import ISatelliteMode;
+/**
+ * Extended interface for SatelliteMode support.
+ *
+ */
 
-interface IMtkGnss extends android.hardware.gnss@1.0::IGnss {
-
-    /**
-     * This method returns the IVzwDebug interface.
-     *
-     * @return vzwDebugIface Handle to the IVzwDebug interface.
-     */
-    getExtensionVzwDebug() generates (IVzwDebug vzwDebugIface);
-    
-    /**
-     * This method returns the ISatelliteMode interface.
-     *
-     * @return smIface Handle to the ISatelliteMode interface.
-     */
-    getExtensionSatelliteMode() generates (ISatelliteMode smIface);
+interface ISatelliteMode {
+    setSatelliteMode(int32_t mode);
 };

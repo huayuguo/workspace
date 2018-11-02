@@ -812,6 +812,26 @@ Return<sp<IVzwDebug>> MtkGnss::getExtensionVzwDebug()  {
     return mVzwDebug;
 }
 
+Return<sp<ISatelliteMode>> MtkGnss::getExtensionSatelliteMode()  {
+    if (mGnssIface == nullptr) {
+        ALOGE("%s: Gnss interface is unavailable", __func__);
+        return nullptr;
+    }
+
+    if (mSatelliteMode == nullptr) {
+        const SatelliteModeInterface* smIface = static_cast<const SatelliteModeInterface*>(
+                mGnssIface->get_extension(GNSS_SATELLITEMODE_INTERFACE));
+
+        if (smIface == nullptr) {
+            ALOGE("%s: SatelliteModeInterface interface is not implemented by HAL", __func__);
+        } else {
+            mSatelliteMode = new SatelliteMode(smIface);
+        }
+    }
+
+    return mSatelliteMode;
+}
+
 
 IMtkGnss* HIDL_FETCH_IMtkGnss(const char* /* hal */) {
     hw_module_t* module;
