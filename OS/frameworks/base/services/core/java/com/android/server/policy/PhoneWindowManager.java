@@ -3373,7 +3373,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     return timeoutTime - now;
                 }
             }
-            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
+            if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_YJ_A )
                     && mScreenshotChordVolumeDownKeyConsumed) {
                 if (!down) {
                     mScreenshotChordVolumeDownKeyConsumed = false;
@@ -6181,6 +6181,23 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             }
 
+			case KeyEvent.KEYCODE_YJ_A :{
+				    if (down) {
+			            if (interactive && !mScreenshotChordVolumeDownKeyTriggered
+			                    && (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
+			                mScreenshotChordVolumeDownKeyTriggered = true;
+			                mScreenshotChordVolumeDownKeyTime = event.getDownTime();
+			                mScreenshotChordVolumeDownKeyConsumed = false;
+			                cancelPendingPowerKeyAction();
+			                interceptScreenshotChord();
+			            }
+			            // mHandler.postDelayed(mScreenshotRunnable, getScreenshotChordLongPressDelay());
+			        } else { 
+			            mScreenshotChordVolumeDownKeyTriggered = false;
+			            cancelPendingScreenshotChordAction();
+			        }
+				break;
+			}
             case KeyEvent.KEYCODE_ENDCALL: {
                 result &= ~ACTION_PASS_TO_USER;
                 if (down) {
