@@ -119,6 +119,9 @@ public class NetworkTimeUpdateService extends Binder {
     private String mDefaultServer;
     private static final String[] SERVERLIST =  new String[]{
                                              "asia.pool.ntp.org",
+                                             "2.android.pool.ntp.org",
+                                             "ntp1.aliyun.com",
+                                             "ntp2.aliyun.com",
                                              "time.windows.com"
                                              };
 
