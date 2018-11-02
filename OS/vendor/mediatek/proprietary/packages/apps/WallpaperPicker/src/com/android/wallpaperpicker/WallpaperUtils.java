@@ -145,7 +145,7 @@ public final class WallpaperUtils {
                 defaultWidth = Math.max((int) (minDim * WALLPAPER_SCREENS_SPAN), maxDim);
                 defaultHeight = maxDim;
             }
-            sDefaultWallpaperSize = new Point(defaultWidth, defaultHeight);
+            sDefaultWallpaperSize = realSize;	//new Point(defaultWidth, defaultHeight);
         }
         return sDefaultWallpaperSize;
     }
