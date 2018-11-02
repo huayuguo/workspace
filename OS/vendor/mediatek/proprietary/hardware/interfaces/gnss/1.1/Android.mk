@@ -25,7 +25,9 @@ $(GEN): $(HIDL)
 $(GEN): PRIVATE_HIDL := $(HIDL)
 $(GEN): PRIVATE_DEPS := $(LOCAL_PATH)/IMtkGnss.hal
 $(GEN): PRIVATE_DEPS += $(LOCAL_PATH)/IVzwDebug.hal
+$(GEN): PRIVATE_DEPS += $(LOCAL_PATH)/ISatelliteMode.hal
 $(GEN): $(LOCAL_PATH)/IVzwDebug.hal
+$(GEN): $(LOCAL_PATH)/ISatelliteMode.hal
 $(GEN): PRIVATE_OUTPUT_DIR := $(intermediates)
 $(GEN): PRIVATE_CUSTOM_TOOL = \
         $(PRIVATE_HIDL) -o $(PRIVATE_OUTPUT_DIR) \
@@ -78,6 +80,27 @@ $(GEN): PRIVATE_CUSTOM_TOOL = \
         vendor.mediatek.hardware.gnss@1.1::IVzwDebugCallback
 
 $(GEN): $(LOCAL_PATH)/IVzwDebugCallback.hal
+	$(transform-generated-source)
+LOCAL_GENERATED_SOURCES += $(GEN)
+
+#
+# Build ISatelliteMode.hal
+#
+GEN := $(intermediates)/vendor/mediatek/hardware/gnss/V1_1/ISatelliteMode.java
+$(GEN): $(HIDL)
+$(GEN): PRIVATE_HIDL := $(HIDL)
+$(GEN): PRIVATE_DEPS := $(LOCAL_PATH)/ISatelliteMode.hal
+$(GEN): $(LOCAL_PATH)/ISatelliteMode.hal
+$(GEN): PRIVATE_OUTPUT_DIR := $(intermediates)
+$(GEN): PRIVATE_CUSTOM_TOOL = \
+        $(PRIVATE_HIDL) -o $(PRIVATE_OUTPUT_DIR) \
+        -Ljava \
+        -randroid.hardware:hardware/interfaces \
+        -randroid.hidl:system/libhidl/transport \
+        -rvendor.mediatek.hardware:vendor/mediatek/proprietary/hardware/interfaces \
+        vendor.mediatek.hardware.gnss@1.1::ISatelliteMode
+
+$(GEN): $(LOCAL_PATH)/ISatelliteMode.hal
 	$(transform-generated-source)
 LOCAL_GENERATED_SOURCES += $(GEN)
 include $(BUILD_JAVA_LIBRARY)
@@ -106,7 +129,9 @@ $(GEN): $(HIDL)
 $(GEN): PRIVATE_HIDL := $(HIDL)
 $(GEN): PRIVATE_DEPS := $(LOCAL_PATH)/IMtkGnss.hal
 $(GEN): PRIVATE_DEPS += $(LOCAL_PATH)/IVzwDebug.hal
+$(GEN): PRIVATE_DEPS += $(LOCAL_PATH)/ISatelliteMode.hal
 $(GEN): $(LOCAL_PATH)/IVzwDebug.hal
+$(GEN): $(LOCAL_PATH)/ISatelliteMode.hal
 $(GEN): PRIVATE_OUTPUT_DIR := $(intermediates)
 $(GEN): PRIVATE_CUSTOM_TOOL = \
         $(PRIVATE_HIDL) -o $(PRIVATE_OUTPUT_DIR) \
@@ -159,6 +184,26 @@ $(GEN): PRIVATE_CUSTOM_TOOL = \
         vendor.mediatek.hardware.gnss@1.1::IVzwDebugCallback
 
 $(GEN): $(LOCAL_PATH)/IVzwDebugCallback.hal
+	$(transform-generated-source)
+LOCAL_GENERATED_SOURCES += $(GEN)
+
+#
+# Build ISatelliteMode.hal
+#
+GEN := $(intermediates)/vendor/mediatek/hardware/gnss/V1_1/ISatelliteMode.java
+$(GEN): $(HIDL)
+$(GEN): PRIVATE_HIDL := $(HIDL)
+$(GEN): PRIVATE_DEPS := $(LOCAL_PATH)/ISatelliteMode.hal
+$(GEN): PRIVATE_OUTPUT_DIR := $(intermediates)
+$(GEN): PRIVATE_CUSTOM_TOOL = \
+        $(PRIVATE_HIDL) -o $(PRIVATE_OUTPUT_DIR) \
+        -Ljava \
+        -randroid.hardware:hardware/interfaces \
+        -randroid.hidl:system/libhidl/transport \
+        -rvendor.mediatek.hardware:vendor/mediatek/proprietary/hardware/interfaces \
+        vendor.mediatek.hardware.gnss@1.1::ISatelliteMode
+
+$(GEN): $(LOCAL_PATH)/ISatelliteMode.hal
 	$(transform-generated-source)
 LOCAL_GENERATED_SOURCES += $(GEN)
 include $(BUILD_STATIC_JAVA_LIBRARY)

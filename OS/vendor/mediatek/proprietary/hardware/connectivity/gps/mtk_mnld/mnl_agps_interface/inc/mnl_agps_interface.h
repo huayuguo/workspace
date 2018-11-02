@@ -6,6 +6,7 @@
 #if defined(__ANDROID_OS__)
 #include <android/log.h>
 #endif
+#include <stdbool.h>
 
 #if defined(ANDROID)
 #define AGPS_TO_MNL "/data/agps_supl/agps_to_mnl"

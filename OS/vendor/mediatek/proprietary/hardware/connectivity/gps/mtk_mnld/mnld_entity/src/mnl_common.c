@@ -268,6 +268,9 @@ int mnl_utl_load_property(MNL_CONFIG_T* prConfig) {
     char result[PROPERTY_VALUE_MAX] = {0};
     if (property_get(MNL_CONFIG_STATUS, result, NULL)) {
         prConfig->dbg2file = result[2] - '0';
+#ifdef CONFIG_GPS_MT3333
+		prConfig->dbg2file = result[6] - '0';
+#endif
         LOGD("dbg2file: %d\n", prConfig->dbg2file);
         prConfig->debug_nmea = result[3] - '0';
         LOGD("debug_nmea:%d \n", prConfig->debug_nmea);
@@ -279,6 +282,11 @@ int mnl_utl_load_property(MNL_CONFIG_T* prConfig) {
         LOGE("Config is not set yet, ignore");
     }
 #endif
+#ifdef CONFIG_GPS_MT3333
+	extern MTK_GPS_BOOL enable_dbg_log;
+	enable_dbg_log = prConfig->debug_nmea;
+#endif
+    LOGD("========================================\n");
     if (idx < cnt)  /* successfully read property from file */  {
         LOGD("[setting] reading from %s\n", mnl_prop_path[idx]);
         res = 0;
@@ -302,6 +310,7 @@ int mnl_utl_load_property(MNL_CONFIG_T* prConfig) {
         prConfig->EPO_priority, prConfig->BEE_priority, prConfig->SUPL_priority);
     LOGD("AVAILIABLE_AGE: %d,RTC_DRIFT: %d,TIME_INTERVAL: %d\n",
         prConfig->AVAILIABLE_AGE, prConfig->RTC_DRIFT, prConfig->TIME_INTERVAL);
+	LOGD("GNSSOPMode: %d", prConfig->GNSSOPMode);
     return res;
 }
 #endif

@@ -6,6 +6,7 @@ filegroup {
         "IMtkGnss.hal",
         "IVzwDebug.hal",
         "IVzwDebugCallback.hal",
+        "ISatelliteMode.hal",
     ],
 }
 
@@ -20,6 +21,7 @@ genrule {
         "vendor/mediatek/hardware/gnss/1.1/MtkGnssAll.cpp",
         "vendor/mediatek/hardware/gnss/1.1/VzwDebugAll.cpp",
         "vendor/mediatek/hardware/gnss/1.1/VzwDebugCallbackAll.cpp",
+        "vendor/mediatek/hardware/gnss/1.1/SatelliteModeAll.cpp",
     ],
 }
 
@@ -46,6 +48,11 @@ genrule {
         "vendor/mediatek/hardware/gnss/1.1/BnHwVzwDebugCallback.h",
         "vendor/mediatek/hardware/gnss/1.1/BpHwVzwDebugCallback.h",
         "vendor/mediatek/hardware/gnss/1.1/BsVzwDebugCallback.h",
+        "vendor/mediatek/hardware/gnss/1.1/ISatelliteMode.h",
+        "vendor/mediatek/hardware/gnss/1.1/IHwSatelliteMode.h",
+        "vendor/mediatek/hardware/gnss/1.1/BnHwSatelliteMode.h",
+        "vendor/mediatek/hardware/gnss/1.1/BpHwSatelliteMode.h",
+        "vendor/mediatek/hardware/gnss/1.1/BsSatelliteMode.h",
     ],
 }
 

@@ -434,12 +434,14 @@ int mtklogger2mnl_hdlr(int fd) {
         LOGD("gps_debuglog_file_name:%s\n", gps_debuglog_file_name);
 
         if (mnld_is_gps_started_done()) {
+#ifndef CONFIG_GPS_MT3333
             ret = mtk_gps_set_debug_type(gps_debuglog_state);
             if (MTK_GPS_ERROR == ret) {
                 LOGE("deep_start,1,mtk_gps_set_debug_type fail");
             } else {
                 LOGD("start gpsdbglog successfully\n");
             }
+#endif
             fg_create_dir_done = 0;
             release_condition(&lock_for_sync[PINGPANG_WRITE_LOCK]);
         }
@@ -456,12 +458,14 @@ int mtklogger2mnl_hdlr(int fd) {
         MNLD_STRNCPY(gps_debuglog_file_name, LOG_FILE, GPS_DEBUG_LOG_FILE_NAME_MAX_LEN);
         MNLD_STRNCPY(storagePath, LOG_FILE_PATH, GPS_DEBUG_LOG_FILE_NAME_MAX_LEN);
         if (mnld_is_gps_started_done()) {
+#ifndef CONFIG_GPS_MT3333
             ret = mtk_gps_set_debug_type(gps_debuglog_state);
             if (MTK_GPS_ERROR == ret) {
                 LOGE("deep_start,2,mtk_gps_set_debug_type fail");
             } else {
                 LOGD("start gpsdbglog successfully\n");
             }
+#endif
             fg_create_dir_done = 0;
             release_condition(&lock_for_sync[PINGPANG_WRITE_LOCK]);
         }
@@ -479,13 +483,15 @@ int mtklogger2mnl_hdlr(int fd) {
         write(fd, ans, strlen(ans));
 
         if (mnld_is_gps_started_done()) {
+#ifndef CONFIG_GPS_MT3333
             ret = mtk_gps_set_debug_type(gps_debuglog_state);
             if (MTK_GPS_ERROR== ret) {
                 LOGE("deep_stop, mtk_gps_set_debug_type fail");
             } else {
                 LOGD("stop gpsdbglog successfully\n");
             }
-            release_condition(&lock_for_sync[PINGPANG_WRITE_LOCK]);
+#endif
+			release_condition(&lock_for_sync[PINGPANG_WRITE_LOCK]);
         }
         mnl2mpe_set_log_path(storagePath, 0, 0);
         mode = 0;

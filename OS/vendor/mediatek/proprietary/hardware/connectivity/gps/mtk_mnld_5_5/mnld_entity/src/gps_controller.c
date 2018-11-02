@@ -1205,6 +1205,12 @@ static int linux_gps_init(void) {
 
     unsigned int i = 0;
     INT32 ret = MTK_GPS_ERROR;
+    bool alt_valid = false;
+    float altitude = 0.0f;
+    bool source_valid = true;
+    bool source_gnss = true;
+    bool source_nlp = false;
+    bool source_sensor = false;
     //  if sending profile msg fail, re-try 2-times, each time sleep 10ms
     for (i = 0; i < 3; i++) {
         ret = mtk_agps_set_param(MTK_MSG_AGPS_MSG_PROFILE, &userprofile, MTK_MOD_DISPATCHER, MTK_MOD_AGENT);
@@ -1222,7 +1228,7 @@ static int linux_gps_init(void) {
             LOGD("mnl init, mtk_gps_get_position_accuracy success, %lf, %lf, %d", latitude, longitude, accuracy);
         }
         if (accuracy < 100) {
-            ret_val = mnl2agps_location_sync(latitude, longitude, accuracy);
+            ret_val = mnl2agps_location_sync(latitude, longitude, accuracy, alt_valid, altitude, source_valid, source_gnss, source_nlp, source_sensor);
             if (0 == ret_val) {
                 LOGD("mnl2agps_location_sync success");
             }

@@ -483,7 +483,7 @@ int mnl2agps_reaiding_req() {
     return send2agps(buff, offset);
 }
 
-int mnl2agps_location_sync(double lat, double lng, int acc) {
+int mnl2agps_location_sync(double lat, double lng, int acc, bool alt_valid, float alt, bool source_valid, bool source_gnss, bool source_nlp, bool source_sensor) {
     char buff[MNL_AGPS_MAX_BUFF_SIZE] = {0};
     int offset = 0;
 
@@ -492,7 +492,15 @@ int mnl2agps_location_sync(double lat, double lng, int acc) {
     put_double(buff, &offset, lat);
     put_double(buff, &offset, lng);
     put_int(buff, &offset, acc);
+    put_byte(buff, &offset, alt_valid);
+    put_float(buff, &offset, alt);
+    put_byte(buff, &offset, source_valid);
+    put_byte(buff, &offset, source_gnss);
+    put_byte(buff, &offset, source_nlp);
+    put_byte(buff, &offset, source_sensor);
 
+    //LOGW("LPPe debug:mnl2agps_location_sync: lat:%.3f, lng:%.3f, acc:%d, alt_valid:%d, alt:%.2f, source_valid:%d, gnss:%d, nlp:%d, sensor:%d", \
+    //    lat, lng, acc, alt_valid, alt, source_valid, source_gnss, source_nlp, source_sensor);
     return send2agps(buff, offset);
 }
 int mnl2agps_agps_settings_ack(mnl_agps_gnss_settings* settings) {
