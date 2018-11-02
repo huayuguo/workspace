@@ -39,6 +39,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <cinttypes>
+#include <cutils/properties.h>
 
 static jobject mCallbacksObj = NULL;
 
@@ -109,6 +110,7 @@ using android::hardware::gnss::V1_0::IGnssXtraCallback;
 using vendor::mediatek::hardware::gnss::V1_1::IMtkGnss;
 using vendor::mediatek::hardware::gnss::V1_1::IVzwDebug;
 using vendor::mediatek::hardware::gnss::V1_1::IVzwDebugCallback;
+using vendor::mediatek::hardware::gnss::V1_1::ISatelliteMode;
 #endif
 
 struct GnssDeathRecipient : virtual public hidl_death_recipient
@@ -126,6 +128,7 @@ sp<GnssDeathRecipient> gnssHalDeathRecipient = nullptr;
 #ifdef MTK_GPS_SUPPORT
 sp<IMtkGnss> gnssHal = nullptr;
 sp<IVzwDebug> vzwDebugIface = nullptr;
+sp<ISatelliteMode> satelliteModeIface = nullptr;
 #else
 sp<IGnss> gnssHal = nullptr;
 #endif
@@ -1187,6 +1190,13 @@ static void android_location_GnssLocationProvider_class_init_native(JNIEnv* env,
         } else {
             vzwDebugIface = vzwDebug;
         }
+		
+		auto satelliteMode = gnssHal->getExtensionSatelliteMode();
+        if (!satelliteMode.isOk()) {
+            ALOGD("Unable to get a handle to Satellite Mode interface");
+        } else {
+            satelliteModeIface = satelliteMode;
+        }
 #endif
     } else {
       ALOGE("Unable to get GPS service\n");
@@ -1363,18 +1373,43 @@ static jint android_location_GnssLocationProvider_read_sv_status(JNIEnv* env, jo
     jfloat* azim = env->GetFloatArrayElements(azumArray, 0);
     jfloat* carrierFreq = env->GetFloatArrayElements(carrierFreqArray, 0);
 
+	int j = 0, mode = 0;/* 0 - gps + beidou; 1 - gps; 2 - beidou; 3 - g + g; 4 - glonass */
+	char value[PROPERTY_VALUE_MAX];
+	//read mode
+	property_get("persist.sys.svmode", value, "0");
+	mode = atoi(value);
+
     /*
      * Read GNSS SV info.
      */
     for (size_t i = 0; i < GnssCallback::sGnssSvListSize; ++i) {
         const IGnssCallback::GnssSvInfo& info = GnssCallback::sGnssSvList[i];
-        svidWithFlags[i] = (info.svid << SVID_SHIFT_WIDTH) |
+
+		if(info.constellation == hardware::gnss::V1_0::GnssConstellationType::GPS){
+			if(mode == 2 || mode == 4)
+				continue;
+		}else if(info.constellation == hardware::gnss::V1_0::GnssConstellationType::SBAS){
+			continue;
+		}else if(info.constellation == hardware::gnss::V1_0::GnssConstellationType::GLONASS){
+			if(mode != 4 && mode != 3)
+				continue;
+		}else if(info.constellation == hardware::gnss::V1_0::GnssConstellationType::QZSS){
+			continue;
+		}else if(info.constellation == hardware::gnss::V1_0::GnssConstellationType::BEIDOU){
+			if(mode != 0 && mode != 2)
+				continue;
+		}else if(info.constellation == hardware::gnss::V1_0::GnssConstellationType::GALILEO){
+			continue;
+		}
+
+        svidWithFlags[j] = (info.svid << SVID_SHIFT_WIDTH) |
             (static_cast<uint32_t>(info.constellation) << CONSTELLATION_TYPE_SHIFT_WIDTH) |
             static_cast<uint32_t>(info.svFlag);
-        cn0s[i] = info.cN0Dbhz;
-        elev[i] = info.elevationDegrees;
-        azim[i] = info.azimuthDegrees;
-        carrierFreq[i] = info.carrierFrequencyHz;
+        cn0s[j] = info.cN0Dbhz;
+        elev[j] = info.elevationDegrees;
+        azim[j] = info.azimuthDegrees;
+        carrierFreq[j] = info.carrierFrequencyHz;
+		j++;
     }
 
     env->ReleaseIntArrayElements(svidWithFlagArray, svidWithFlags, 0);
@@ -1382,7 +1417,7 @@ static jint android_location_GnssLocationProvider_read_sv_status(JNIEnv* env, jo
     env->ReleaseFloatArrayElements(elevArray, elev, 0);
     env->ReleaseFloatArrayElements(azumArray, azim, 0);
     env->ReleaseFloatArrayElements(carrierFreqArray, carrierFreq, 0);
-    return static_cast<jint>(GnssCallback::sGnssSvListSize);
+    return static_cast<jint>(j);
 }
 
 static void android_location_GnssLocationProvider_agps_set_reference_location_cellid(
@@ -1972,6 +2007,20 @@ static void android_location_GnssLocationProvider_set_vzw_debug_screen(JNIEnv* e
 #endif
 }
 
+static void android_location_GnssLocationProvider_set_satellite_mode(JNIEnv* env,
+        jobject /* obj */, jint mode)
+{
+    ALOGD("%s: set_satellite_mode mode=%d\n", __func__, mode);
+
+#ifdef MTK_GPS_SUPPORT
+    if (satelliteModeIface == nullptr) {
+        return;  // vzw debug screen not support
+    }
+    satelliteModeIface->setSatelliteMode(mode);
+#endif
+}
+
+
 static const JNINativeMethod sMethods[] = {
      /* name, signature, funcPtr */
     {"class_init_native", "()V", reinterpret_cast<void *>(
@@ -2121,6 +2170,9 @@ static const JNINativeMethod sMethods[] = {
     {"native_set_vzw_debug_screen",
             "(Z)V",
             reinterpret_cast<void *>(android_location_GnssLocationProvider_set_vzw_debug_screen)},
+	{"native_set_satellite_mode",
+            "(I)V",
+            reinterpret_cast<void *>(android_location_GnssLocationProvider_set_satellite_mode)},
 };
 
 int register_android_server_location_GnssLocationProvider(JNIEnv* env) {
