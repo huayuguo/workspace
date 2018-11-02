@@ -2406,6 +2406,9 @@ class DatabaseHelper extends SQLiteOpenHelper {
             loadSetting(stmt, Settings.Secure.ALLOW_MOCK_LOCATION,
                     "1".equals(SystemProperties.get("ro.allow.mock.location")) ? 1 : 0);
 
+			loadStringSetting(stmt, Settings.Secure.ENABLED_INPUT_METHODS,R.string.def_input_method);
+			loadStringSetting(stmt, Settings.Secure.DEFAULT_INPUT_METHOD,R.string.def_input_method);
+
             loadSecure35Settings(stmt);
 
             loadBooleanSetting(stmt, Settings.Secure.MOUNT_PLAY_NOTIFICATION_SND,
