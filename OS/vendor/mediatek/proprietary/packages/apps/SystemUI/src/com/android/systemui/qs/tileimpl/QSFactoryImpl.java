@@ -55,6 +55,8 @@ import com.mediatek.systemui.qs.tiles.ext.SimDataConnectionTile;
 import com.mediatek.systemui.statusbar.util.SIMHelper;
 ///@}
 
+import VolumeTile.VolumeTile;
+
 public class QSFactoryImpl implements QSFactory {
 
     private static final String TAG = "QSFactory";
@@ -104,6 +106,7 @@ public class QSFactoryImpl implements QSFactory {
                     new ApnSettingsTile(mHost));
         }
         /// @}
+		else if (tileSpec.equals("volume")) return new VolumeTile(mHost);
         // Intent tiles.
         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(mHost, tileSpec);
         else if (tileSpec.startsWith(CustomTile.PREFIX)) return CustomTile.create(mHost, tileSpec);
