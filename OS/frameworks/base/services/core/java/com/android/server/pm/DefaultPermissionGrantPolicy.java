@@ -743,7 +743,44 @@ final class DefaultPermissionGrantPolicy {
                 grantRuntimePermissionsLPw(ringtonePickerPackage,
                         STORAGE_PERMISSIONS, true, userId);
             }
-
+            // add mount mx
+            PackageParser.Package mxPackage = getSystemPackageLPr("com.mxtech.videoplayer.pro");
+            if (mxPackage != null
+                    && doesPackageSupportRuntimePermissions(mxPackage)) {
+                grantRuntimePermissionsLPw(mxPackage,
+                        STORAGE_PERMISSIONS, true, userId);
+            }
+    	    // add mount winrar
+            PackageParser.Package rarPackage = getSystemPackageLPr("com.rarlab.rar");
+            if (rarPackage != null
+                    && doesPackageSupportRuntimePermissions(rarPackage)) {
+                grantRuntimePermissionsLPw(rarPackage,
+                        STORAGE_PERMISSIONS, true, userId);
+            }
+            // WPS
+            PackageParser.Package wpsPackage = getSystemPackageLPr("cn.wps.moffice_eng");
+            if (wpsPackage != null
+                    && doesPackageSupportRuntimePermissions(wpsPackage)) {
+                grantRuntimePermissionsLPw(wpsPackage, PHONE_PERMISSIONS, true, userId);
+                grantRuntimePermissionsLPw(wpsPackage, CONTACTS_PERMISSIONS, true, userId);
+                grantRuntimePermissionsLPw(wpsPackage, LOCATION_PERMISSIONS, true, userId);
+                grantRuntimePermissionsLPw(wpsPackage, CALENDAR_PERMISSIONS, true, userId);
+                grantRuntimePermissionsLPw(wpsPackage, MICROPHONE_PERMISSIONS, true, userId);
+                grantRuntimePermissionsLPw(wpsPackage, CAMERA_PERMISSIONS, true, userId);
+                grantRuntimePermissionsLPw(wpsPackage, STORAGE_PERMISSIONS, true, userId);
+            }
+            // Easy Voice Recorder Pro
+            PackageParser.Package evrPackage = getSystemPackageLPr("com.coffeebeanventures.easyvoicerecorder"); //com.digipom.easyvoicerecorder.pro
+            if (evrPackage != null
+                    && doesPackageSupportRuntimePermissions(evrPackage)) {
+                //grantRuntimePermissionsLPw(evrPackage, PHONE_PERMISSIONS, true, userId);
+                //grantRuntimePermissionsLPw(evrPackage, CONTACTS_PERMISSIONS, true, userId);
+                //grantRuntimePermissionsLPw(evrPackage, LOCATION_PERMISSIONS, true, userId);
+                //grantRuntimePermissionsLPw(evrPackage, CALENDAR_PERMISSIONS, true, userId);
+                grantRuntimePermissionsLPw(evrPackage, MICROPHONE_PERMISSIONS, true, userId);
+                //grantRuntimePermissionsLPw(evrPackage, CAMERA_PERMISSIONS, true, userId);
+                grantRuntimePermissionsLPw(evrPackage, STORAGE_PERMISSIONS, true, userId);
+            }
             mService.mSettings.onDefaultRuntimePermissionsGrantedLPr(userId);
         }
     }
