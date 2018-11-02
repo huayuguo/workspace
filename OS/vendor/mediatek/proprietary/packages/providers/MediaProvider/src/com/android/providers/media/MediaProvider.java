@@ -3524,6 +3524,8 @@ public class MediaProvider extends ContentProvider {
                     /// M: Updates file_name for file search.
                     FileSearchHelper.computeFileName(newPath, initialValues);
                     // first rename the row for the directory
+                    /// M: Update parent id to refresh mtp
+                    initialValues.put(FileColumns.PARENT, getParent(helper, db, newPath));
                     helper.mNumUpdates++;
                     count = db.update(tableAndWhere.table, initialValues,
                             tableAndWhere.where, whereArgs);
