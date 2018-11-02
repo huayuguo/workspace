@@ -69,6 +69,7 @@
         <item name="popupColorTertiary">#757575</item> <!-- Gray 600 -->
         <item name="widgetsTheme">@style/WidgetContainerTheme.Dark</item>
         <item name="isMainColorDark">true</item>
+        <item name="workspaceStatusBarScrim">@null</item>
     </style>
 
     <!--
