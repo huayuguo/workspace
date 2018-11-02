@@ -3078,4 +3078,8 @@
 
   <java-symbol type="integer" name="config_stableDeviceDisplayWidth" />
   <java-symbol type="integer" name="config_stableDeviceDisplayHeight" />
+
+  <java-symbol type="string" name="storage_size_KB" />
+  <java-symbol type="string" name="storage_size_MB" />
+  <java-symbol type="string" name="storage_size_GB" />
 </resources>

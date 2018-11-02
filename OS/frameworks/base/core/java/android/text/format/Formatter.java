@@ -107,13 +107,29 @@ public final class Formatter {
     public static String formatShortFileSize(@Nullable Context context, long sizeBytes) {
         return formatFileSize(context, sizeBytes, FLAG_SHORTER);
     }
+    
+    /** {@hide} */
+	private static String formatZhFileSize(@Nullable Context context,String str){
+        Locale locale = localeFromContext(context);
+        if(locale !=null){
+            if((locale.getLanguage() != null) && (str != null)){
+                if(locale.getLanguage().contains("zh")){
+		            String kb = context.getString(com.android.internal.R.string.storage_size_KB);
+		            String mb = context.getString(com.android.internal.R.string.storage_size_MB);
+		            String gb = context.getString(com.android.internal.R.string.storage_size_GB);
+		            str = str.replaceAll(kb,"KB").replaceAll(mb,"MB").replaceAll(gb,"GB");
+	            }
+	        }
+	    }
+	    return str;
+	}
 
     private static String formatFileSize(@Nullable Context context, long sizeBytes, int flags) {
         if (context == null) {
             return "";
         }
         final RoundedBytesResult res = RoundedBytesResult.roundBytes(sizeBytes, flags);
-        return bidiWrap(context, formatRoundedBytesResult(context, res));
+        return formatZhFileSize(context, bidiWrap(context, formatRoundedBytesResult(context, res)));
     }
 
     private static String getSuffixOverride(@NonNull Resources res, MeasureUnit unit) {
