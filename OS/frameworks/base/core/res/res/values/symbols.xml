@@ -3082,4 +3082,8 @@
   <java-symbol type="string" name="storage_size_KB" />
   <java-symbol type="string" name="storage_size_MB" />
   <java-symbol type="string" name="storage_size_GB" />
+
+  <java-symbol type="string" name="touch_enable" />
+  <java-symbol type="string" name="touch_disable" />
+
 </resources>

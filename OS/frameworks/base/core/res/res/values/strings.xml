@@ -4669,4 +4669,7 @@
     <string name="storage_size_KB">KB</string>
     <string name="storage_size_MB">MB</string>
     <string name="storage_size_GB">GB</string>
+
+    <string name="touch_enable">Touch Enable</string>
+    <string name="touch_disable">Touch Disable</string>
 </resources>

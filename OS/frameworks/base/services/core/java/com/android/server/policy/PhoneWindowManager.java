@@ -263,6 +263,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+import com.android.server.input.InputManagerService;
+import android.widget.Toast;
+
 /**
  * WindowManagerPolicy implementation for the Android phone UI.  This
  * introduces a new method suffix, Lp, for an internal lock of the
@@ -782,6 +785,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private boolean mScreenshotChordVolumeDownKeyTriggered;
     private long mScreenshotChordVolumeDownKeyTime;
     private boolean mScreenshotChordVolumeDownKeyConsumed;
+    private boolean mPassmotionChordYJBTriggered;
+    private long mPassmotionChordYJKeyTime;
+    private boolean mPassmotionChordYJBKeyConsumed;
     private boolean mA11yShortcutChordVolumeUpKeyTriggered;
     private long mA11yShortcutChordVolumeUpKeyTime;
     private boolean mA11yShortcutChordVolumeUpKeyConsumed;
@@ -850,6 +856,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private static final int MSG_REQUEST_TRANSIENT_BARS_ARG_STATUS = 0;
     private static final int MSG_REQUEST_TRANSIENT_BARS_ARG_NAVIGATION = 1;
+    private static boolean motionState = false;
 
     private class PolicyHandler extends Handler {
         @Override
@@ -1332,7 +1339,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // If the power key has still not yet been handled, then detect short
         // press, long press, or multi press and decide what to do.
         mPowerKeyHandled = hungUp || mScreenshotChordVolumeDownKeyTriggered
-                || mA11yShortcutChordVolumeUpKeyTriggered || gesturedServiceIntercepted;
+                || mA11yShortcutChordVolumeUpKeyTriggered || gesturedServiceIntercepted || mPassmotionChordYJBTriggered;
         if (!mPowerKeyHandled) {
             if (interactive) {
                 // When interactive, we're already awake.
@@ -1637,6 +1644,30 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 cancelPendingPowerKeyAction();
                 mScreenshotRunnable.setScreenshotType(TAKE_SCREENSHOT_FULLSCREEN);
                 mHandler.postDelayed(mScreenshotRunnable, getScreenshotChordLongPressDelay());
+            }
+        }
+    }
+    
+    private void interceptPassMotion() {
+        if (mPassmotionChordYJBTriggered && mScreenshotChordPowerKeyTriggered) {
+            final long now = SystemClock.uptimeMillis();
+            if (now <= mPassmotionChordYJKeyTime + SCREENSHOT_CHORD_DEBOUNCE_DELAY_MILLIS
+                    && now <= mScreenshotChordPowerKeyTime
+                            + SCREENSHOT_CHORD_DEBOUNCE_DELAY_MILLIS) {
+            	mPassmotionChordYJBKeyConsumed = true;
+                cancelPendingPowerKeyAction();
+                motionState = !motionState;
+                InputManagerService.setForcePassMotion(motionState);
+                Handler handlerToast = new Handler(Looper.getMainLooper());
+                handlerToast.post(new Runnable() {
+                    public void run() {
+                        Toast.makeText(mContext, 
+                        		motionState ? com.android.internal.R.string.touch_disable : com.android.internal.R.string.touch_enable, 
+                        				Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                Slog.w(TAG, "interceptPassMotion: " + motionState);
             }
         }
     }
@@ -3404,6 +3435,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && mA11yShortcutChordVolumeUpKeyConsumed) {
                 if (!down) {
                     mA11yShortcutChordVolumeUpKeyConsumed = false;
+                }
+                return -1;
+            }
+        }
+        
+        if ((flags & KeyEvent.FLAG_FALLBACK) == 0) {
+            if (mPassmotionChordYJBTriggered && !mScreenshotChordPowerKeyTriggered) {
+                final long now = SystemClock.uptimeMillis();
+                final long timeoutTime = mPassmotionChordYJKeyTime
+                        + SCREENSHOT_CHORD_DEBOUNCE_DELAY_MILLIS;
+                if (now < timeoutTime) {
+                    return timeoutTime - now;
+                }
+            }
+            if ((keyCode == KeyEvent.KEYCODE_YJ_B )
+                    && mPassmotionChordYJBKeyConsumed) {
+                if (!down) {
+                	mPassmotionChordYJBKeyConsumed = false;
                 }
                 return -1;
             }
@@ -6198,6 +6247,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			        }
 				break;
 			}
+			
+			case KeyEvent.KEYCODE_YJ_B :{
+				    if (down) {
+			            if (interactive && !mPassmotionChordYJBTriggered
+			                    && (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
+			            	mPassmotionChordYJBTriggered = true;
+			            	mPassmotionChordYJKeyTime = event.getDownTime();
+			            	mPassmotionChordYJBKeyConsumed = false;
+			                cancelPendingPowerKeyAction();
+			                interceptPassMotion();
+			            }
+			        } else {
+			        	mPassmotionChordYJBTriggered = false;
+			            //cancelPendingScreenshotChordAction();
+			        }
+			    break;
+			}
+
             case KeyEvent.KEYCODE_ENDCALL: {
                 result &= ~ACTION_PASS_TO_USER;
                 if (down) {

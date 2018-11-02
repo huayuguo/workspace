@@ -227,6 +227,7 @@ public class InputManagerService extends IInputManager.Stub
     private static native void nativeSetPointerSpeed(long ptr, int speed);
     private static native void nativeSetShowTouches(long ptr, boolean enabled);
     private static native void nativeSetInteractive(long ptr, boolean interactive);
+    private static native void nativeSetForcePassMotion(boolean passmotion);
     private static native void nativeReloadCalibration(long ptr);
     private static native void nativeVibrate(long ptr, int deviceId, long[] pattern,
             int repeat, int token);
@@ -2408,5 +2409,10 @@ public class InputManagerService extends IInputManager.Stub
                 }
             }
         }
+    }
+    
+    /** {@hide} */
+    public static void setForcePassMotion(boolean passmotion) {
+    	nativeSetForcePassMotion(passmotion);
     }
 }

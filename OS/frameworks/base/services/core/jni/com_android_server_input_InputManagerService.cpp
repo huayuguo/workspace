@@ -215,6 +215,7 @@ public:
     void setInputDeviceEnabled(uint32_t deviceId, bool enabled);
     void setShowTouches(bool enabled);
     void setInteractive(bool interactive);
+    static void setForcePassMotion(bool passMotion);
     void reloadCalibration();
     void setPointerIconType(int32_t iconId);
     void reloadPointerIcons();
@@ -304,6 +305,7 @@ private:
     } mLocked;
 
     std::atomic<bool> mInteractive;
+    static bool forcePassMotion;
 
     void updateInactivityTimeoutLocked(const sp<PointerController>& controller);
     void handleInterceptActions(jint wmActions, nsecs_t when, uint32_t& policyFlags);
@@ -316,7 +318,7 @@ private:
     }
 };
 
-
+bool NativeInputManager::forcePassMotion = false;
 
 NativeInputManager::NativeInputManager(jobject contextObj,
         jobject serviceObj, const sp<Looper>& looper) :
@@ -882,6 +884,10 @@ void NativeInputManager::setInteractive(bool interactive) {
     mInteractive = interactive;
 }
 
+void NativeInputManager::setForcePassMotion(bool passMotion) {
+	forcePassMotion = passMotion;
+}
+
 void NativeInputManager::reloadCalibration() {
     mInputManager->getReader()->requestRefreshConfiguration(
             InputReaderConfiguration::CHANGE_TOUCH_AFFINE_TRANSFORMATION);
@@ -1051,6 +1057,8 @@ void NativeInputManager::interceptMotionBeforeQueueing(nsecs_t when, uint32_t& p
             policyFlags |= POLICY_FLAG_PASS_TO_USER;
         }
     }
+    if(forcePassMotion)
+    	policyFlags &= ~POLICY_FLAG_PASS_TO_USER;
 }
 
 void NativeInputManager::handleInterceptActions(jint wmActions, nsecs_t when,
@@ -1519,6 +1527,11 @@ static void nativeSetInteractive(JNIEnv* env,
     im->setInteractive(interactive);
 }
 
+static void nativeSetForcePassMotion(JNIEnv* env,
+        jclass clazz, jboolean passmotion) {
+    NativeInputManager::setForcePassMotion(passmotion);
+}
+
 static void nativeReloadCalibration(JNIEnv* env, jclass clazz, jlong ptr) {
     NativeInputManager* im = reinterpret_cast<NativeInputManager*>(ptr);
 
@@ -1693,6 +1706,8 @@ static const JNINativeMethod gInputManagerMethods[] = {
             (void*) nativeSetShowTouches },
     { "nativeSetInteractive", "(JZ)V",
             (void*) nativeSetInteractive },
+	{ "nativeSetForcePassMotion", "(Z)V",
+			(void*) nativeSetForcePassMotion },
     { "nativeReloadCalibration", "(J)V",
             (void*) nativeReloadCalibration },
     { "nativeVibrate", "(JI[JII)V",

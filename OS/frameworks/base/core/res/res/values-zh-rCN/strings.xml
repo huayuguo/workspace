@@ -1771,4 +1771,6 @@
     <string name="storage_size_KB">"千字节"</string>
     <string name="storage_size_MB">"兆字节"</string>
     <string name="storage_size_GB">"吉字节"</string>
+    <string name="touch_enable">触摸使能</string>
+    <string name="touch_disable">触摸禁止</string>
 </resources>
