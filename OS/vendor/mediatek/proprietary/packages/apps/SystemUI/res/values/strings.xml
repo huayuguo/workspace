@@ -686,7 +686,8 @@
     <!-- QuickSettings: IME [CHAR LIMIT=NONE] -->
     <string name="quick_settings_ime_label">Input Method</string>
     <!-- QuickSettings: Location [CHAR LIMIT=NONE] -->
-    <string name="quick_settings_location_label">Location</string>
+    <string name="quick_settings_location_label">Beidou/GPS</string>
+    <string name="quick_settings_volume_label">Volume</string>
     <!-- QuickSettings: Location (Off) [CHAR LIMIT=NONE] -->
     <string name="quick_settings_location_off_label">Location Off</string>
     <!-- QuickSettings: Media device [CHAR LIMIT=NONE] -->
