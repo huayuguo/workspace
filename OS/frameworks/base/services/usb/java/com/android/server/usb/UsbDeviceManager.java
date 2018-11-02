@@ -415,7 +415,10 @@ public class UsbDeviceManager {
         private boolean mSourcePower;
         private boolean mSinkPower;
         private boolean mConfigured;
-        private boolean mUsbDataUnlocked;
+        ///Rixiang-yanghui-20180418 for default usb mtp start
+        //private boolean mUsbDataUnlocked;
+        private boolean mUsbDataUnlocked = true;
+        ///Rixiang-yanghui-20180418 for default usb mtp end
         private boolean mAudioAccessoryConnected;
         private boolean mAudioAccessorySupported;
         private String mCurrentFunctions;
@@ -881,7 +884,11 @@ public class UsbDeviceManager {
                 case MSG_UPDATE_STATE:
                     mConnected = (msg.arg1 == 1);
                     mConfigured = (msg.arg2 == 1);
-
+                    ///Rixiang-yanghui-20180418 for usb default mtp start
+                    if (!mConnected) {
+                         mUsbDataUnlocked = true;
+                    }
+                    ///Rixiang-yanghui-20180418 for usb default mtp end
                     updateUsbNotification(false);
                     updateAdbNotification(false);
                     if (mBootCompleted) {
@@ -894,7 +901,10 @@ public class UsbDeviceManager {
                     if (mBootCompleted) {
                         if (!mConnected) {
                             // restore defaults when USB is disconnected
-                            setEnabledFunctions(null, !mAdbEnabled, false);
+                            ///Rixiang-yanghui-20180418 for usb default mtp start
+                            //setEnabledFunctions(null, !mAdbEnabled, false);
+                            setEnabledFunctions(null, !mAdbEnabled, true);
+                            ///Rixiang-yanghui-20180418 for usb default mtp end
                         }
                         updateUsbFunctions();
                     } else {
@@ -1000,7 +1010,10 @@ public class UsbDeviceManager {
                         updateUsbStateBroadcastIfNeeded(false);
                         mPendingBootBroadcast = false;
                     }
-                    setEnabledFunctions(null, false, false);
+                    ///Rixiang-yanghui-20180418 for mtp start
+                    //setEnabledFunctions(null, false, false);
+                    setEnabledFunctions(UsbManager.USB_FUNCTION_MTP, false, true);
+                    ///Rixiang-yanghui-20180418 for mtp end
                     if (mCurrentAccessory != null) {
                         getCurrentSettings().accessoryAttached(mCurrentAccessory);
                     }
@@ -1241,7 +1254,8 @@ public class UsbDeviceManager {
             // if ADB is enabled, reset functions to ADB
             // else enable MTP as usual.
             if (UsbManager.containsFunction(func, UsbManager.USB_FUNCTION_ADB)) {
-                return UsbManager.USB_FUNCTION_ADB;
+                //return UsbManager.USB_FUNCTION_ADB;
+                return UsbManager.USB_FUNCTION_MTP;
             } else {
                 return UsbManager.USB_FUNCTION_MTP;
             }
