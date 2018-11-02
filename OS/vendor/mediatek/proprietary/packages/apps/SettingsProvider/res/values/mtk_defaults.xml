@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <integer name="def_bg_power_saving">1</integer>
+    <bool name="def_auto_time_gps">false</bool>
+    <!-- M: Add for SIM-Mode -->
+    <integer name="def_four_sim_mode">15</integer>
+    <integer name="def_triple_sim_mode">7</integer>
+    <integer name="def_dual_sim_mode">3</integer>
+    <integer name="def_single_sim_mode">1</integer>
+    <integer name="def_telephony_misc_feature_config">6</integer>
+    <!-- M: Add for Voice-wake-up -->
+    <integer name="def_voice_unlock_mode">0</integer>
+    <integer name="def_voice_wakeup_mode">1</integer>
+</resources>

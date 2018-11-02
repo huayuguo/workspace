@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- MTK Wireless settings start -->
+    <string name="lockdown_vpn_already_connected">Always on VPN has already been enabled for connection.</string>
+    <!-- MTK Wireless settings end -->
+
+    <!-- MTK NFC settings start -->
+    <string name="nfc_p2p_mode">P2P mode</string>
+    <string name="nfc_p2p_mode_summary">Send or receive App content</string>
+    <string name="nfc_tag_mode_category">Tag mode</string>
+    <string name="nfc_rw_tag_title">Tag reading  &amp; writing</string>
+    <string name="nfc_rw_tag_summary">Read from or write to a tag</string>
+    <string name="nfc_card_emulation_category_title">Card emulation mode</string>
+    <string name="nfc_card_emulation">Card emulation</string>
+    <string name="card_emulation_settings_category_title">available security element</string>
+    <string name="card_emulation_settings_no_element_found">No available security element.</string>
+    <string name="card_emulation_settings_off_text">To see available security elements, turn Card emulation on.</string>
+    <string name="card_emulation_turning_off_text">Turning Card emulation off...</string>
+    <string name="card_emulation_turning_on_text">Turning Card emulation on...</string>
+    <string name="card_emulation_switch_error_title">Error</string>
+    <string name="card_emulation_switch_error_message">Failed to switch to <xliff:g id="card_mode">%1$s</xliff:g>.</string>
+    <string name="card_emulation_sim_not_supported_message"><xliff:g id="sim_description">%1$s</xliff:g> does not support NFC Card emulation function.</string>
+    <string name="card_emulation_two_sim_not_supported_message">SIM1,SIM2 do not support NFC Card emulation function.</string>
+    <string name="nfc_hce_pay_summary">Using device to TAP &amp; PAY as Google wallet, credit card, etc.</string>
+    <string name="nfc_service_status_title">Non-payment services</string>
+    <string name="nfc_service_status_summary"><xliff:g id="count" example="24">%1$d</xliff:g> of <xliff:g id="count" example="24">%2$d</xliff:g> are enabled</string>
+    <string name="nfc_service_overflow">Over the limit size</string>
+    <string name="nfc_service_summary_enabled">Enabled</string>
+    <string name="nfc_service_summary_disabled">Disabled</string>
+    <!-- MTK NFC settings end -->
+
+    <!-- RCSE Settings start[SKIP COMMENT] -->
+    <string name="rcse_settings_title" translatable="false">Joyn settings</string>
+    <!-- RCSE Settings end[SKIP COMMENT] -->
+
+    <!--MTK DRM settings start -->
+    <string name="drm_settings_title">DRM reset</string>
+    <string name="drm_settings_summary">Deletes all DRM licenses</string>
+    <string name="drm_reset_dialog_msg">This operation will delete all the licenses on this device. Continue?</string>
+    <string name="drm_reset_toast_msg">Licenses have been deleted successfully.</string>
+    <!--MTK DRM settings end -->
+
+    <!-- ClearMotion start -->
+    <string name="clear_motion_summary">Video fluency enhancer</string>
+    <string name="clear_motion_title" translatable="false">ClearMotion™</string>
+    <string name="on_text">On</string>
+    <string name="off_text">Off</string>
+    <!-- ClearMotion end -->
+
+    <!-- MTK vow service start -->
+    <string name="voice_ui_title">"Voice Control"</string>
+    <string name="voice_wakeup">Voice Wake up</string>
+    <string name="voice_wakeup_confirm">Please set the command before you use.</string>
+    <!-- MTK vow service end -->
+
+    <!-- Background power saving start -->
+    <string name="bg_power_saving_title">Standby intelligent power saving</string>
+    <!-- Background power saving end -->
+
+    <!-- MiraVision start -->
+    <string name="mira_vision_title" translatable="false">MiraVision™</string>
+    <string name="mira_vision_summary">Display picture quality optimization</string>
+    <!-- MiraVision end -->
+
+    <!--MTK DateTime start-->
+    <string name="gps_time_sync_attention_gps_on">It will take at most 1 minute to obtain GPS fix. Besides, GPS may fail to provide time due to weak environmental signal.\n\nAre you sure to use GPS provided time?</string>
+    <string name="gps_time_sync_attention_gps_off">To use GPS provided time, you must enable GPS first. It then take at most 1 minute to obtain GPS fix. Besides, GPS may fail to provide time due to weak environmental signal. \n\nAre you sure to enable GPS now and wait for GPS provided time?</string>
+    <!--MTK DateTime end-->
+
+    <!-- MTK About phone start -->
+    <string name="custom_build_version">Custom build version</string>
+    <string name="software_updates_more_title">Software updates</string>
+    <string name="software_updates_more_summary">Check for new version software</string>
+    <!-- MTK About phone end -->
+
+    <!-- MTK HDMI start -->
+    <string name="hdmi_toggler" translatable="false">HDMI</string>
+    <string name="hdmi_settings">HDMI settings</string>
+    <string name="hdmi_settings_summary">Click to configure HDMI</string>
+    <string name="hdmi_video_resolution">Video resolution</string>
+    <string name="hdmi_auto">AUTO</string>
+    <string name="hdmi_replace_hdmi" translatable="false">HDMI</string>
+    <string name="hdmi_replace_mhl" translatable="false">MHL</string>
+    <string name="slimport_replace_hdmi" translatable="false">SlimPort</string>
+    <string name="hdmi_scale_control">Video scale settings</string>
+    <string name="hdmi_scale_no_scale">No scaling</string>
+    <string name="hdmi_scale_scale_down">Scale down <xliff:g id="scale_percent">%s</xliff:g>%%</string>
+    <string name="hdmi_audio_output">Audio output</string>
+    <string name="hdmi_audio_output_stereo">Stereo</string>
+    <string name="hdmi_audio_output_multi_channel">Multi Channel</string>
+    <!-- MTK HDMI end -->
+
+    <!-- MTK Data usage start -->
+    <string name="default_data_switch_err_msg1">Can not switch preferred SIM for cellular data during the call.</string>
+    <!-- MTK Data usage  end -->
+
+    <!-- MTK AOD settings start -->
+    <string name="aod_title">Always on Display</string>
+    <string name="aod_summary">Some system information will always be shown in suspend mode</string>
+    <!-- MTK AOD settings end -->
+
+    <!-- MTK default write disk start -->
+    <string name="select_memory">Default write disk</string>
+    <!-- MTK default write disk end -->
+
+    <!-- lovelyfonts start -->
+    <string name="font_setting_title">Font style</string>
+    <!-- lovelyfonts end -->
+
+    <!-- Sound Enhancement Settings start -->
+    <string name="sound_enhancement_title">Sound enhancement</string>
+    <string name="music_plus_title" translatable="false">BesAudEnh</string>
+    <string name="music_plus_summary">Audio enhancer for earphone</string>
+    <string name="audio_profile_bes_surround_title">BesSurround</string>
+    <string name="audio_profile_bes_surround_summary">Audio Surrounding</string>
+    <string name="audio_profile_bes_surround_mode_movie">Movie mode</string>
+    <string name="audio_profile_bes_surround_mode_music">Music mode</string>
+    <string name="anc_switch_title">Active noise control</string>
+    <string name="audio_profile_bes_loudness_title" translatable="false">BesLoudness</string>
+    <string name="audio_profile_bes_loudness_summary">Volume booster for speaker</string>
+    <string name="sound_enhance_hifi_mode">Hi-Fi Mode</string>
+    <string name="sound_enhance_hifi_mode_summary">High-Fidelity</string>
+    <!-- Sound Enhancement Settings end -->
+
+    <!-- MTK schedule power start -->
+    <string name="schedule_power_on_off_settings_title">Scheduled power on &amp; off</string>
+    <!-- MTK schedule power end -->
+
+    <!-- MTK Wi-Fi settings start -->
+    <string name="sim_slot">SIM Slot</string>
+    <string name="wifi_security_wapi_certificate">WAPI Certificate</string>
+    <string name="wapi_auto_sel_cert">Select automatically</string>
+    <string name="wifi_no_cert_for_wapi">Could not find certification for current connecting AP</string>
+    <string name="wapi_cert_manage_title">WAPI certificate management</string>
+    <!-- MTK Wi-Fi settings end -->
+
+    <!-- MTK WFD change resolution start -->
+    <string name="wfd_change_resolution_menu_title">Change resolution</string>
+    <!-- MTK WFD change resolution end -->
+
+    <!-- C2K OM start -->
+    <string name="current_operators_mccmnc" translatable="false">MCC、MNC</string>
+    <string name="status_current_sidnid" translatable="false">SID、NID</string>
+    <string name="status_current_cellid" translatable="false">CELL ID</string>
+    <string name="status_cdma_signal_strength" translatable="false">CDMA</string>
+ <!--  <string name="status_cdma_signal_strength" translatable="false">CDMA <xliff:g id="csignal">%s \nLTE <xliff:g id = "ltesignal">%s</xliff:g></xliff:g></string>   -->
+    <!-- C2K OM end -->
+
+<!-- M: for [CTA2016 requirement] -->
+    <string name="data_usage_menu_cellular_data_control">Cellular data control</string>
+
+    <!-- L+L feature start-->
+    <string name="enable_wifi_calling">Enable Wi-Fi calling</string>
+    <string name="wifi_calling_disabled">Disabled</string>
+    <!-- L+L feature end-->
+
+    <string name="two_cdma_dialog_msg">Slots 1 and 2 cannot support CDMA simultaneously.</string>
+
+    <!-- OP18 Font Size customization-->
+    <string name="summary_font_size" translatable="false">%1$s</string>
+    <string name="dialog_title_font_size">Font size</string>
+    <string name="do_not_show">Do not show again</string>
+    <string name="warning_dialog_title">Information</string>
+    <string name="large_font_warning">Very large font size will only applied in specific applications. Large font size will be applied in all other applications.</string>
+    <string name="small_font_warning">Minimum font size will only applied in specific applications. Small font size will be applied in all other applications.</string>	
+    <string name="positive_button_title">OK</string>
+    <string name="negative_button_title">CANCEL</string>
+
+    <!-- OP18 customization: Smart Call Forwarding begin -->
+
+    <!-- Error message displayed after failing to disable forwarding calls when the phone is busy -->
+    <string name="disable_cfb_forbidden">Your operator doesn\'t support disabling call forwarding when your phone is busy.</string>
+
+    <!-- Error message displayed after failing to disable forwarding calls when the phone does not answer -->
+    <string name="disable_cfnry_forbidden">Your operator doesn\'t support disabling call forwarding when your phone doesn\'t answer.</string>
+
+    <!-- Error message displayed after failing to disable forwarding calls when the phone is unreachable -->
+    <string name="disable_cfnrc_forbidden">Your carrier doesn\'t support disabling call forwarding when your phone is unreachable.</string>
+
+    <string name="smart_call_fwd_alert_dlg">Enable Smart dual SIM?\nWith some service providers , this function may not work properly or you may be charged.</string>
+    <string name="smart_call_fwd_settings_title">Smart Call Forwarding</string>
+    <string name="smart_call_fwd_settings_summary">Receive calls from both SIM cards even during calls.</string>
+    <string name="smart_call_fwd_dlg_title">Select SIM card.</string>
+    <string name="value_not_set">unknown</string>
+    <string name="progress_dlg_title">Dual SIM always on</string>
+    <string name="progress_dlg_reading">Reading settings...</string>
+    <string name="progress_dlg_writing">Updating settings...</string>
+    <string name="network_error">Network or Sim card reading error</string>
+    <string-array name="smart_call_fwd_choices">
+        <item>DUAL SIM</item>
+        <item>SIM1 TO SIM2</item>
+        <item>SIM2 TO SIM1</item>
+    </string-array>
+    <string-array name="smart_call_fwd_mode_values">
+        <item>3</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <!-- OP18 customization: Smart Call Forwarding end -->
+
+    <!-- WifiCalling setting start -->
+    <string name="Switch_not_in_use_string">The switch is temporarily unavailable. Please try again later.</string>
+    <!-- WifiCalling setting end -->
+    <!-- MTK TMO volte setting start -->
+    <string name="volte_settings_title">VoLTE</string>
+    <string name="volte_pref_settings_title">Voice over LTE Preferred</string>
+    <string name="can_not_switch_enhanced_4g_lte_mode_tips">The switch is temporarily unavailable. Please try again later.</string>
+    <!-- MTK TMO volte setting end -->
+
+    <!-- MTK Wi-Fi hotspot client start -->
+    <string name="wifi_tether_auto_disable_title">Keep Wi-Fi hotspot on</string>
+    <string name="wifi_tether_wps_connect_title">WPS connect</string>
+    <string name="wifi_tether_wps_connect_summary">Selected Wi-Fi protected setup mode to proceed</string>
+    <string name="wifi_tether_wps_pin_error">Invalid PIN</string>
+    <string name="wifi_tethering_title">Wi-Fi hotspot</string>
+    <string name="wifi_ap_wps_dialog_title">WPS connect</string>
+    <string name="wifi_ap_wps_mode_title">WPS mode</string>
+    <string name="wifi_ap_wps_pin_title">Type PIN from client</string>
+    <string name="wifi_ap_reset_OOB_title">Reset network SSID, security and password to default ( out-of-box configuration for WPS )</string>
+    <string name="wifi_ap_reset_OOB">Reset OOB</string>
+    <string name="wifi_ap_max_connection_title">Maximum connections</string>
+    <string name="wifi_ap_connected_title">Connected users</string>
+    <string name="wifi_ap_blocked_title">Blocked users</string>
+    <string name="wifi_ap_client_block_title">Block</string>
+    <string name="wifi_ap_client_unblock_title">Unblock</string>
+    <string name="wifi_ap_client_details_title">Details</string>
+    <string name="wifi_ap_client_mac_label">MAC address:</string>
+    <string name="wifi_ap_client_ip_label">IP address:</string>
+    <string name="wifi_tether_setting_title">Basic settings</string>
+    <string name="wifi_ap_no_connected">0 connected user</string>
+    <string name="wifi_ap_no_blocked">0 blocked user</string>
+    <string name="security_not_set">Security is not set</string>
+    <string name="launch_error">"Couldn't launch the application!"</string>
+    <!-- MTK Wi-Fi hotspot client end -->
+
+
+    <!-- MTK Advanced Calling settings start -->
+    <string name="advanced_calling_title">Advanced Calling</string>
+    <string name="hd_voice_and_video_calling">HD Voice and Video calling</string>
+    <string name="hd_voice_calling_only">HD Voice Only</string>
+    <string name="popup_disable_msg">Don\'t remind me again</string>
+    <string name="advance_calling_disable_msg">Your phone will not be able to make or receive HD voice and video calls when you turn this setting off.</string>
+    <string name="advance_calling_enable_msg">When using the Verizon Wireless 4G LTE network, the voice portion of a video call will appear on your bill as mobile\u2011to\u2011mobile voice usage, and the video portion will be billed as data.\nWhen Video calling is turned on, others can see that your phone has video calling.</string>
+    <string name="enable_hd_voice_only_msg">Your phone will not be able to make or receive video calls when you turn this setting on.</string>
+    <string name="wifi_calling_title">Wi-Fi Calling</string>
+    <string name="update_emergency_address_title">Update Current Emergency Address</string>
+    <string name="update_emergency_address_summary">This address will be used by emergency services as your location if you make an emergency(E911) call over Wi-Fi from this phone within the US.</string>
+    <string name="when_roaming_title">When Roaming</string>
+    <string name="when_roaming_summary">Choose the connection you prefer when outside the Verizon Network (Wi-Fi or Cellular)</string>
+    <string name="turn_off_wifi_calling">Turn off Wi-Fi Calling</string>
+    <string name="advance_wifi_calling_disable_msg">If you turn off Wi-Fi Calling, all your future calls will go over the mobile network. If mobile network isn\'t available, you may not be able to make calls.\n\nIn the future if you want to use Wi-Fi for Voice Calling, you can turn on Wi-Fi Calling by going to Advanced Calling Settings menu.</string>
+    <string name="wifi_sleep_policy_msg">In order to improve your Wi-Fi Calling experience, your Wi-Fi settings has been changed so that Wi-Fi will not switch off when the screen is off.\n\nTo change this setting go to Settings&#8212; Wi-Fi &#8212; Configure Wi-Fi.</string>
+    <string name="roaming_mode_summary">Choose the kind of network you prefer for making and receiving calls when you\'re outside the Verizon network and other networks are available.</string>
+    <string name="note">Note</string>
+    <string name="lvc_disable">Your Video Calling Service on your account was turned off.\n\nPlease contact customer care to have the service turned on.</string>
+    <!-- MTK Advanced Calling settings end -->
+    <string name="default_data_switch_msg"><xliff:g id="current_sim">%1$s</xliff:g> may not work temporarily.</string>
+
+    <!-- Toast message shown when user tries to turn off radio while in an emergency call -->
+    <string name="radio_off_during_emergency_call">Cannot turn off SIM card during an emergency call.</string>
+
+    <!-- The message of data service -->
+    <string name="data_service_enable_mobile">Temporary data service</string>
+    <string name="data_service_summary">When non-data SIM in VoLTE call, it will be used for data service</string>
+    <string name="data_service_prompt">When non-data SIM in VoLTE call, it will be used for data service. This will lead to extra data usage of the SIM.</string>
+</resources>
