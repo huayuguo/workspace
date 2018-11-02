@@ -2187,6 +2187,20 @@ public class PhoneNumberUtils
     private static boolean isLocalEmergencyNumberInternal(int subId, String number,
                                                           Context context,
                                                           boolean useExactMatch) {
+        /// M: Revise for telephony add-on @{
+        if (sMtkPhoneNumberUtils != null) {
+            try {
+                Method extPhoneNumberMethod = sMtkPhoneNumberUtils.getMethod(
+                        "isLocalEmergencyNumberInternal",
+                        new Class[] { int.class, String.class, Context.class, boolean.class});
+                return (boolean) extPhoneNumberMethod.invoke(null, subId, number,
+                        context, useExactMatch);
+            } catch (Exception e) {
+                Rlog.e(LOG_TAG, "No MtkPhoneNumberUtils! Used AOSP for instead! e: " + e);
+            }
+        }
+        /// @}
+
         String countryIso;
         CountryDetector detector = (CountryDetector) context.getSystemService(
                 Context.COUNTRY_DETECTOR);

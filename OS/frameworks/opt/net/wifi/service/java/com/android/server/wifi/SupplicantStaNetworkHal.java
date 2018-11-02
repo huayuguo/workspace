@@ -281,7 +281,13 @@ public class SupplicantStaNetworkHal {
                         return false;
                     }
                 } else {
-                    if (!setPsk(NativeUtil.hexStringToByteArray(config.preSharedKey))) {
+                    /// M: Add quotes for recognizing WAPI hex pre-shared key
+                    if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.WAPI_PSK)) {
+                        if (!setPskPassphrase(NativeUtil.addEnclosingQuotes(config.preSharedKey))) {
+                            Log.e(TAG, "failed to set wapi psk passphrase");
+                            return false;
+                        }
+                    } else if (!setPsk(NativeUtil.hexStringToByteArray(config.preSharedKey))) {
                         Log.e(TAG, "failed to set psk");
                         return false;
                     }

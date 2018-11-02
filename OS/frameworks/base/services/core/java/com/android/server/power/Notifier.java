@@ -693,7 +693,7 @@ final class Notifier {
 
     private void playWirelessChargingStartedSound() {
         final boolean enabled = Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.CHARGING_SOUNDS_ENABLED, 1) != 0;
+                Settings.Global.CHARGING_SOUNDS_ENABLED, 0) != 0;
         final String soundPath = Settings.Global.getString(mContext.getContentResolver(),
                 Settings.Global.WIRELESS_CHARGING_STARTED_SOUND);
         if (enabled && soundPath != null) {

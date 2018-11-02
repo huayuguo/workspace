@@ -96,8 +96,13 @@ public class AppWindowContainerController
                     if (mListener == null) {
                         return;
                     }
-                    if (DEBUG_VISIBILITY) Slog.v(TAG_WM, "Reporting drawn in "
+                    /// M: Modify log fot test tool @{
+                    //if (DEBUG_VISIBILITY) Slog.v(TAG_WM, "Reporting drawn in "
+                    //        + AppWindowContainerController.this.mToken);
+                    if (DEBUG_VISIBILITY) Slog.v(TAG_WM, "Reporting starting window drawn in "
                             + AppWindowContainerController.this.mToken);
+                    /// @}
+
                     mListener.onStartingWindowDrawn(msg.getWhen());
                     break;
                 default:

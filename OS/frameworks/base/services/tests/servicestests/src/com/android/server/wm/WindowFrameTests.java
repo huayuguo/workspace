@@ -87,7 +87,7 @@ public class WindowFrameTests extends WindowTestsBase {
             outBounds.set(mInsetBounds);
         }
         @Override
-        boolean isFullscreen() {
+        public boolean isFullscreen() {
             return mFullscreenForTest;
         }
     }

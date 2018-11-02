@@ -54,14 +54,16 @@ public:
         : mIsMain(isMain)
     {
     }
-    
+
 protected:
     virtual bool threadLoop()
     {
-        IPCThreadState::self()->joinThreadPool(mIsMain);
+        IPCThreadState* ipc = IPCThreadState::self();
+        if(ipc)
+            ipc->joinThreadPool(mIsMain);
         return false;
     }
-    
+
     const bool mIsMain;
 };
 

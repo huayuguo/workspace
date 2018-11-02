@@ -689,10 +689,16 @@ EGLSurface eglCreateWindowSurface(  EGLDisplay dpy, EGLConfig config,
 
         int result = native_window_api_connect(window, NATIVE_WINDOW_API_EGL);
         if (result < 0) {
-            ALOGE("eglCreateWindowSurface: native_window_api_connect (win=%p) "
-                    "failed (%#x) (already connected to another API?)",
-                    window, result);
-            return setError(EGL_BAD_ALLOC, EGL_NO_SURFACE);
+            switch (window->query(window, NATIVE_WINDOW_QUERY_API, &value)) {
+                case NO_INIT:
+                    ALOGI("eglCreateWindowSurface: BufferQueue has been abandoned by Consumer");
+                    native_window_api_disconnect(window, NATIVE_WINDOW_API_EGL);
+                    return EGL_NO_SURFACE;
+                default:
+                    ALOGE("eglCreateWindowSurface: native_window_api_connect (win=%p) "
+                            "failed (%#x) (already connected to another API?)", window, result);
+                    return setError(EGL_BAD_ALLOC, EGL_NO_SURFACE);
+            }
         }
 
         EGLint format;

@@ -1742,9 +1742,9 @@ public final class PowerManagerService extends SystemService
 
                 // Tell the notifier whether wireless charging has started so that
                 // it can provide feedback to the user.
-                if (dockedOnWirelessCharger) {
+                //if (dockedOnWirelessCharger) {
                     mNotifier.onWirelessChargingStarted();
-                }
+                //}
             }
 
             if (wasPowered != mIsPowered || oldLevelLow != mBatteryLevelLow) {
@@ -2008,7 +2008,9 @@ public final class PowerManagerService extends SystemService
                     nextTimeout = -1;
                 }
 
-                if (mUserActivitySummary != 0 && nextTimeout >= 0) {
+                //if (mUserActivitySummary != 0 && nextTimeout >= 0) {
+                Slog.d(TAG,"mScreenOffTimeoutSetting ="+mScreenOffTimeoutSetting);
+                if (mUserActivitySummary != 0 && nextTimeout >= 0 && mScreenOffTimeoutSetting > 0) {
                     Message msg = mHandler.obtainMessage(MSG_USER_ACTIVITY_TIMEOUT);
                     msg.setAsynchronous(true);
                     mHandler.sendMessageAtTime(msg, nextTimeout);

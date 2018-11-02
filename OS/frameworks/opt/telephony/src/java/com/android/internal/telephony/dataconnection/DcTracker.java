@@ -1992,7 +1992,9 @@ public class DcTracker extends Handler {
                 }
 
                 if (apn.hasMvnoParams()) {
-                    if (r != null && ApnSetting.mvnoMatches(r, apn.mvnoType, apn.mvnoMatchData)) {
+                    if (mtkMvnoMatches(apn.mvnoType, apn.mvnoMatchData)
+                            || (r != null && ApnSetting.mvnoMatches(r,
+                            apn.mvnoType, apn.mvnoMatchData))) {
                         mvnoApns.add(apn);
                     }
                 } else {
@@ -3635,7 +3637,7 @@ public class DcTracker extends Handler {
         }
 
         IccRecords r = mIccRecords.get();
-        String operator = (r != null) ? r.getOperatorNumeric() : "";
+        String operator = mtkGetOperatorNumeric(r);
 
         // This is a workaround for a bug (7305641) where we don't failover to other
         // suitable APNs if our preferred APN fails.  On prepaid ATT sims we need to
@@ -5175,5 +5177,26 @@ public class DcTracker extends Handler {
      */
     protected boolean mtkIsNeedRegisterSettingsObserver(int pSubId, int subId) {
         return true;
+    }
+
+    /**
+     * Anchor method of buildWaitingApns
+     *
+     * @param r the corresponding IccRecords
+     * @return the operator numeric of sim
+     */
+    protected String mtkGetOperatorNumeric(IccRecords r) {
+        return (r != null) ? r.getOperatorNumeric() : "";
+    }
+
+    /**
+     * Anchor method of createApnList
+     *
+     * @param mvnoType the mvno type
+     * @param mvnoMatchData the mvno match data
+     * @return whether the mvno is matched.
+     */
+    protected boolean mtkMvnoMatches(String mvnoType, String mvnoMatchData) {
+        return false;
     }
 }

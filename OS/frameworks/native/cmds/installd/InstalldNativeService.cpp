@@ -337,6 +337,7 @@ static int prepare_app_quota(const std::unique_ptr<std::string>& uuid, const std
         return 0;
     }
 #else
+	auto path = create_data_path(uuid ? uuid->c_str() : nullptr);
     // Hard quotas disabled
     return 0;
 #endif
@@ -525,6 +526,9 @@ binder::Status InstalldNativeService::clearAppData(const std::unique_ptr<std::st
         if (access(path.c_str(), F_OK) == 0) {
             if (delete_dir_contents(path) != 0) {
                 res = error("Failed to delete contents of " + path);
+            } else if ((flags & (FLAG_CLEAR_CACHE_ONLY | FLAG_CLEAR_CODE_CACHE_ONLY)) == 0) {
+                remove_path_xattr(path, kXattrInodeCache);
+                remove_path_xattr(path, kXattrInodeCodeCache);
             }
         }
     }

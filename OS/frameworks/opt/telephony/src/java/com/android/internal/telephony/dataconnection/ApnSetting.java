@@ -461,7 +461,7 @@ public class ApnSetting {
         return false;
     }
 
-    protected static boolean imsiMatches(String imsiDB, String imsiSIM) {
+    public static boolean imsiMatches(String imsiDB, String imsiSIM) {
         // Note: imsiDB value has digit number or 'x' character for seperating USIM information
         // for MVNO operator. And then digit number is matched at same order and 'x' character
         // could replace by any digit number.

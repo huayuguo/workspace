@@ -377,6 +377,9 @@ public class ImsCallProfile implements Parcelable {
             case CALL_TYPE_VOICE:
                 videostate = VideoProfile.STATE_AUDIO_ONLY;
                 break;
+            case CALL_TYPE_VT_NODIR:
+                videostate = VideoProfile.STATE_BIDIRECTIONAL | VideoProfile.STATE_PAUSED;
+                break;
             default:
                 videostate = VideoProfile.STATE_AUDIO_ONLY;
                 break;

@@ -2198,7 +2198,9 @@ public class ImsPhoneCallTracker extends CallTracker implements ImsPullCall {
                 if (videoProvider instanceof ImsVideoCallProviderWrapper) {
                     ImsVideoCallProviderWrapper wrapper = (ImsVideoCallProviderWrapper)
                             videoProvider;
-
+                    /// M: Fix Google memory leak, the data usage handler should be unregistered.@{
+                    wrapper.unregisterForDataUsageUpdate(ImsPhoneCallTracker.this);
+                    /// @}
                     wrapper.removeImsVideoProviderCallback(conn);
                 }
             }
@@ -2331,7 +2333,10 @@ public class ImsPhoneCallTracker extends CallTracker implements ImsPullCall {
                     // The EVENT_RESUME_BACKGROUND causes resumeWaitingOrHolding to be called.
                     if ((mForegroundCall.getState() == ImsPhoneCall.State.HOLDING)
                             || (mRingingCall.getState() == ImsPhoneCall.State.WAITING)) {
-                            sendEmptyMessage(EVENT_RESUME_BACKGROUND);
+                        /// M: ALPS03815859, release pendingMO if it is exist. @{
+                        releasePendingMOIfRequired();
+                        /// @}
+                        sendEmptyMessage(EVENT_RESUME_BACKGROUND);
                     } else {
                         //when multiple connections belong to background call,
                         //only the first callback reaches here
@@ -3657,7 +3662,11 @@ public class ImsPhoneCallTracker extends CallTracker implements ImsPullCall {
                 // If the carrier supports downgrading to voice, then we can simply issue a
                 // downgrade to voice instead of terminating the call.
                 modifyVideoCall(imsCall, VideoProfile.STATE_AUDIO_ONLY);
-            } else if (mSupportPauseVideo && reasonCode != ImsReasonInfo.CODE_WIFI_LOST) {
+            } else if (mSupportPauseVideo && reasonCode != ImsReasonInfo.CODE_WIFI_LOST
+                /// M: ALPS03728528, check if pause video allowed during call initiation
+                /// phase or not. @{
+                      && isCarrierPauseAllowed(imsCall)) {
+                //@}
                 // The carrier supports video pause signalling, so pause the video if we didn't just
                 // lose wifi; in that case just disconnect.
                 mShouldUpdateImsConfigOnDisconnect = true;
@@ -3858,6 +3867,13 @@ public class ImsPhoneCallTracker extends CallTracker implements ImsPullCall {
 
     protected AsyncResult getCallStateChangeAsyncResult() {
         return new AsyncResult(null, null, null);
+    }
+
+    protected boolean isCarrierPauseAllowed(ImsCall imsCall) {
+        return true;
+    }
+
+    protected void releasePendingMOIfRequired() {
     }
     /// @}
 

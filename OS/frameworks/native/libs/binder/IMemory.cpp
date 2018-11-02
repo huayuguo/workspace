@@ -36,6 +36,7 @@
 #include <utils/threads.h>
 
 #define VERBOSE   0
+#define PATH_MAX 4096
 
 namespace android {
 // ---------------------------------------------------------------------------
@@ -338,6 +339,15 @@ void BpMemoryHeap::assertReallyMapped() const
             if (mBase == MAP_FAILED) {
                 ALOGE("cannot map BpMemoryHeap (binder=%p), size=%zd, fd=%d (%s)",
                         IInterface::asBinder(this).get(), size, fd, strerror(errno));
+
+                char buf[1024];
+                char file_path[PATH_MAX] = {'0'};
+                snprintf(buf, sizeof(buf), "/proc/self/fd/%d",fd);
+                if (readlink(buf, file_path, sizeof(file_path) - 1) != -1) {
+                    ALOGD("[BpMemoryHeap debug] fd=%d, readlink=%s", fd, file_path);
+                } else {
+                    ALOGE("[BpMemoryHeap debug] fd=%d, readlink fail", fd);
+                }
                 close(fd);
             } else {
                 mSize = size;
