@@ -45,6 +45,7 @@ import android.os.WorkSource;
 import android.util.Log;
 import android.util.SparseArray;
 
+import java.util.Iterator;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.AsyncChannel;
@@ -1677,10 +1678,23 @@ public class WifiManager {
      * returned.
      */
     public List<ScanResult> getScanResults() {
-        try {
+        /*try {
             return mService.getScanResults(mContext.getOpPackageName());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
+        }*/
+    	List<ScanResult> scanResults = null;
+        try {
+        	scanResults = mService.getScanResults(mContext.getOpPackageName());
+        	Iterator<ScanResult> it = scanResults.iterator();
+        	while(it.hasNext()){
+        		if(!it.next().SSID.startsWith("ZHSK-L")){
+        			it.remove();
+        		}
+        	}
+        	return  scanResults;
+        } catch (RemoteException e) {
+            return null;
         }
     }
 
