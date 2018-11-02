@@ -45,6 +45,7 @@ import com.android.settings.widget.SwitchBar;
 import com.android.settingslib.RestrictedLockUtils;
 import com.android.settingslib.RestrictedSwitchPreference;
 import com.android.settingslib.location.RecentLocationApps;
+import android.os.Environment;
 
 import com.mediatek.settings.UtilsExt;
 import com.mediatek.settings.ext.ISettingsMiscExt;
@@ -53,6 +54,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import android.os.SystemProperties;
 
 /**
  * System location settings (Settings &gt; Location). The screen has three parts:
@@ -91,6 +99,7 @@ public class LocationSettings extends LocationSettingsBase
     private static final String KEY_MANAGED_PROFILE_SWITCH = "managed_profile_location_switch";
     /** Key for preference screen "Mode" */
     private static final String KEY_LOCATION_MODE = "location_mode";
+    private static final String KEY_SATELLITE_MODE = "satellite_mode";
     /** Key for preference category "Recent location requests" */
     private static final String KEY_RECENT_LOCATION_REQUESTS = "recent_location_requests";
     /** Key for preference category "Location services" */
@@ -101,7 +110,7 @@ public class LocationSettings extends LocationSettingsBase
     private boolean mValidListener = false;
     private UserHandle mManagedProfile;
     private RestrictedSwitchPreference mManagedProfileSwitch;
-    private Preference mLocationMode;
+    private Preference mLocationMode,mSatelliteMode;
     private PreferenceCategory mCategoryRecentLocationRequests;
     /** Receives UPDATE_INTENT  */
     private BroadcastReceiver mReceiver;
@@ -199,6 +208,19 @@ public class LocationSettings extends LocationSettingsBase
                         return true;
                     }
                 });
+        mSatelliteMode = root.findPreference(KEY_SATELLITE_MODE);
+        mSatelliteMode.setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        activity.startPreferencePanel(
+                        		LocationSettings.this,
+                        		SatelliteMode.class.getName(), null,
+                                R.string.location_satellite_mode, null, LocationSettings.this,
+                                0);
+                        return true;
+                    }
+                });
         mExt.initCustomizedLocationSettings(root, mLocationMode.getOrder() + 1);
         RecentLocationApps recentApps = new RecentLocationApps(activity);
         List<RecentLocationApps.Request> recentLocationRequests = recentApps.getAppList();
@@ -244,6 +266,43 @@ public class LocationSettings extends LocationSettingsBase
 
         refreshLocationMode();
         return root;
+    }
+
+    private String getSatelliteMode(){
+		String path = Environment.getDataDirectory()+"/misc/gps/mnl.prop";
+		String content = "";
+		File file = new File(path);
+		Log.d("LocationSettings", "The File exist = " + file.exists());
+		if (!file.exists())
+		{
+			content = "init.speed=115200\nlink.speed=115200\nGNSS_MODE=1\n\n";
+			Log.d("LocationSettings", "content ="+content);
+			return content;
+		}
+		else
+		{
+			try {
+				InputStream instream = new FileInputStream(file);
+				if (instream != null)
+				{
+					InputStreamReader inputreader = new InputStreamReader(instream);
+					BufferedReader buffreader = new BufferedReader(inputreader);
+					String line;
+					while (( line = buffreader.readLine()) != null) {
+						content += line + "\n";
+					}
+					instream.close();
+				}
+			} catch (java.io.FileNotFoundException e) {
+				e.printStackTrace();
+				Log.d("LocationSettings", "The File doesn't not exist.");
+			} catch (IOException e) {
+				e.printStackTrace();
+				Log.d("LocationSettings", e.getMessage());
+			}
+		}
+		Log.d("LocationSettings", "content ="+content);
+		return content;
     }
 
     private void setupManagedProfileCategory(PreferenceScreen root) {
@@ -358,6 +417,7 @@ public class LocationSettings extends LocationSettingsBase
             mSwitchBar.setEnabled(!restricted);
         }
         mLocationMode.setEnabled(enabled && !restricted);
+        mSatelliteMode.setEnabled(enabled && !restricted);
         mExt.updateCustomizedLocationSettings();
         mCategoryRecentLocationRequests.setEnabled(enabled);
 
@@ -377,6 +437,37 @@ public class LocationSettings extends LocationSettingsBase
         // As a safety measure, also reloads on location mode change to ensure the settings are
         // up-to-date even if an affected app doesn't send the setting changed broadcast.
         injector.reloadStatusMessages();
+
+		String s = SystemProperties.get("persist.sys.svmode", "0");
+		Log.d("LocationSettings", "---->>>> String s=" + s);
+		int svmode = 0;
+		try {
+			svmode = Integer.parseInt(s);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.d("LocationSettings", "---->>>> String e=" + e);
+		}
+		Log.d("LocationSettings", "---->>>> svmode=" + svmode);
+		switch (svmode) {
+			case 0:
+				mSatelliteMode.setSummary(R.string.location_satellite_gps_beidou);
+				break;
+			case 1:
+				mSatelliteMode.setSummary(R.string.location_satellite_gps);
+				break;
+			case 2:
+				mSatelliteMode.setSummary(R.string.location_satellite_beidou);
+				break;
+			case 3:
+				mSatelliteMode.setSummary(R.string.location_satellite_gps_glonass);
+				break;
+			case 4:
+				mSatelliteMode.setSummary(R.string.location_satellite_glonass);
+				break;
+			default:
+				mSatelliteMode.setSummary(R.string.location_satellite_off);
+				break;
+		}
     }
 
     /**

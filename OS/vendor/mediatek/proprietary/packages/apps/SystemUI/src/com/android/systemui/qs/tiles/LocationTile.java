@@ -33,6 +33,7 @@ import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.statusbar.policy.KeyguardMonitor;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.statusbar.policy.LocationController.LocationChangeCallback;
+import com.android.systemui.Dependency;
 
 /** Quick settings tile: Location **/
 public class LocationTile extends QSTileImpl<BooleanState> {
@@ -72,16 +73,22 @@ public class LocationTile extends QSTileImpl<BooleanState> {
 
     @Override
     protected void handleClick() {
-        if (mKeyguard.isSecure() && mKeyguard.isShowing()) {
-            Dependency.get(ActivityStarter.class).postQSRunnableDismissingKeyguard(() -> {
-                final boolean wasEnabled = mState.value;
-                mHost.openPanels();
-                mController.setLocationEnabled(!wasEnabled);
-            });
-            return;
-        }
-        final boolean wasEnabled = mState.value;
-        mController.setLocationEnabled(!wasEnabled);
+	   	 Intent intent = new Intent();
+	     intent.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+	     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	     Dependency.get(ActivityStarter.class).postStartActivityDismissingKeyguard(intent, 0);
+	
+	        
+//	    if (mKeyguard.isSecure() && mKeyguard.isShowing()) {
+//            Dependency.get(ActivityStarter.class).postQSRunnableDismissingKeyguard(() -> {
+//                final boolean wasEnabled = mState.value;
+//                mHost.openPanels();
+//                mController.setLocationEnabled(!wasEnabled);
+//            });
+//            return;
+//        }
+//        final boolean wasEnabled = mState.value;
+//        mController.setLocationEnabled(!wasEnabled);
     }
 
     @Override
