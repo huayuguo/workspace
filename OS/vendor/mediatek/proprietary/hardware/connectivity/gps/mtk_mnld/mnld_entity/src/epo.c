@@ -60,11 +60,7 @@
 static int epo_data_updated = 0;
 static int gps_epo_period = 3;
 static int wifi_epo_period = 3;
-#ifndef CONFIG_GPS_MT3333
 static int gps_epo_download_days = 3;
-#else
-int gps_epo_download_days = 3;
-#endif
 static int gps_epo_download_piece = 1;
 static int gps_epo_enable = 1;
 static int gps_epo_wifi_trigger = 0;
@@ -163,7 +159,6 @@ static MTK_UINT32 EPO_File_Read (MTK_FILE hFile, void *DstBuf, MTK_UINT32 u4Leng
     return 0;
 }
 
-#ifndef CONFIG_GPS_MT3333
 void epo_update_epo_file() {
     unlink(EPO_FILE);
     if (mtk_agps_agent_epo_file_update() == MTK_GPS_ERROR) {
@@ -172,14 +167,6 @@ void epo_update_epo_file() {
         unlink(EPO_UPDATE_HAL);
     }
 }
-#else
-void epo_update_epo_file() {
-    
-}
-time_t epo_get_now_time(){
-	return time(NULL);
-}
-#endif
 
 int mtk_gps_epo_md5_match_check(char *file_epo, char *file_md5)
 {
@@ -1265,7 +1252,6 @@ CURLcode curl_easy_download(char* url, char* filename) {
         return CURLE_FAILED_INIT;
     }
 }
-
 static int counter = 1;
 void getEpoUrl(char* filename, char* url) {
     char count_str[15] = {0};
@@ -1355,7 +1341,7 @@ CURLcode curl_easy_download_epo_DAT(void) {
     }
     return res;
 }
-#ifndef CONFIG_GPS_MT3333
+
 CURLcode curl_easy_download_epo(void) {
     int res_val;
     CURLcode res;
@@ -1415,81 +1401,6 @@ CURLcode curl_easy_download_epo(void) {
     }
     return res;
 }
-#else
-static int counter1 = 1;
-void __getEpoUrl(char* filename, char* url) {
-    char count_str[15] = {0};
-
-    if (counter1 <= 1) {
-        strcat(url, "https://mgepodownload.mediatek.com/");
-    } else {
-        strcat(url, "https://mepodownload.mediatek.com/");
-    }
-    strcat(url, filename);
-    strcat(url, "?retryCount=");
-    sprintf(count_str, "%d", counter1-1);
-    strcat(url, count_str);
-    LOGD("url = %s\n", url);
-}
-
-CURLcode curl_easy_download_epo(void) {
-    int res_val;
-    CURLcode res;
-    char gps_epo_data_file_name[60] = {0};
-    char url[256]={0};
-
-    LOGD("curl_easy_download_epo");
-    __getEpoUrl(gps_epo_file_name, url);
-    strcat(gps_epo_data_file_name, "/data/misc/gps/");
-    strcat(gps_epo_data_file_name, gps_epo_file_name);
-    res = curl_easy_download(url, gps_epo_data_file_name);
-    LOGD("epo file curl_easy_download res = %d\n", res);
-    if (res == CURLE_OK) {
-        FILE *fp_temp = NULL;
-        FILE *fp = NULL;
-
-        counter1 = 1;
-        if (gps_epo_file_count == 0) {
-            unlink(EPO_UPDATE_HAL);
-        }
-        res_val = chmod(gps_epo_data_file_name, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH);
-        //LOGD("chmod res_val = %d, %s\n", res_val, strerror(errno));
-        fp_temp = fopen(EPO_UPDATE_HAL, "at");
-        if (fp_temp != NULL) {
-            fp = fopen(gps_epo_data_file_name, "r");
-            if (fp != NULL) {
-            #define buf_size  256
-                char data[buf_size] = {0};
-                int bytes_in = 0, bytes_out = 0;
-                int len = 0;
-
-                while ((bytes_in = fread(data, 1, sizeof(data), fp)) > 0
-                        && (bytes_in <= (int)(buf_size* sizeof(char)))) {
-                    bytes_out = fwrite(data, 1, bytes_in, fp_temp);
-                    if (bytes_in != bytes_out) {
-                        //LOGD("bytes_in = %d,bytes_out = %d\n", bytes_in, bytes_out);
-                    }
-                    len += bytes_out;
-                    // LOGD("copying file...%d bytes copied\n",len);
-                }
-                fclose(fp);
-            } else {
-                LOGE("Open merged file fp=NULL\n");
-            }
-            fclose(fp_temp);
-        }
-        else {
-            LOGE("Open merged file failed\n");
-        }
-        res_val = chmod(EPO_UPDATE_HAL, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH);
-        //LOGD("chmod res_val = %d, %s\n", res_val, strerror(errno));
-    } else {
-        unlink(gps_epo_data_file_name);
-        counter1++;
-    }
-    return res;
-}
-#endif
 
 static unsigned int mtk_gps_epo_get_piece_file_size() {
     struct stat st;

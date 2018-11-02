@@ -38,9 +38,6 @@
 #include "epo.h"
 #include "qepo.h"
 #include "mtknav.h"
-#ifdef CONFIG_GPS_MT3333
-#include "mt3333_controller.h"
-#endif
 
 #ifdef LOGD
 #undef LOGD
@@ -77,40 +74,6 @@ typedef enum {
 #define GPS_CALI_DATA_DENALI_PATH "/vendor/nvdata/md/NVRAM/CALIBRAT/EL6N_000"
 #endif
 
-#ifdef CONFIG_GPS_MT3333
-enum {
-    GPS_PWRCTL_UNSUPPORTED  = 0xFF,
-    GPS_PWRCTL_OFF          = 0x00,
-    GPS_PWRCTL_ON           = 0x01,
-    GPS_PWRCTL_RST          = 0x02,
-    GPS_PWRCTL_OFF_FORCE    = 0x03,
-    GPS_PWRCTL_RST_FORCE    = 0x04,
-    GPS_PWRCTL_MAX          = 0x05,
-};
-enum {
-    GPS_PWR_UNSUPPORTED     = 0xFF,
-    GPS_PWR_RESUME          = 0x00,
-    GPS_PWR_SUSPEND         = 0x01,
-    GPS_PWR_MAX             = 0x02,
-};
-enum {
-    MNL_GPS_STATE_UNSUPPORTED   = 0xFF,
-    MNL_GPS_STATE_PWROFF        = 0x00, /*cleanup/power off, default state*/
-    MNL_GPS_STATE_INIT          = 0x01, /*init*/
-    MNL_GPS_STATE_START         = 0x02, /*start navigating*/
-    MNL_GPS_STATE_STOP          = 0x03, /*stop navigating*/
-    MNL_GPS_STATE_DEC_FREQ      = 0x04,
-    MNL_GPS_STATE_SLEEP         = 0x05,
-    MNL_GPS_STATE_MAX           = 0x06,
-};
-enum {
-    GPS_PWRSAVE_UNSUPPORTED = 0xFF,
-    GPS_PWRSAVE_DEC_FREQ    = 0x00,
-    GPS_PWRSAVE_SLEEP       = 0x01,
-    GPS_PWRSAVE_OFF         = 0x02,
-    GPS_PWRSAVE_MAX         = 0x03,
-};
-#endif
 enum {
     GPS_MEASUREMENT_UNKNOWN     = 0xFF,
     GPS_MEASUREMENT_INIT        = 0x00,
@@ -136,15 +99,6 @@ enum {
 #define PATH_EX             "/mnt/sdcard2/"
 #define SDCARD_SWITCH_PROP  "persist.mtklog.log2sd.path"
 /*---------------------------------------------------------------------------*/
-
-#ifdef CONFIG_GPS_MT3333
-#define MNL_ATTR_PWRCTL  "/sys/class/gpsdrv/gps/pwrctl"
-#define MNL_ATTR_SUSPEND "/sys/class/gpsdrv/gps/suspend"
-#define MNL_ATTR_STATE   "/sys/class/gpsdrv/gps/state"
-#define MNL_ATTR_PWRSAVE "/sys/class/gpsdrv/gps/pwrsave"
-#define MNL_ATTR_STATUS  "/sys/class/gpsdrv/gps/status"
-#define MNL_ATTR_RDELAY  "/sys/class/gpsdrv/gps/rdelay"
-#endif
 
 #define GET_VER
 #ifdef TCXO
@@ -212,10 +166,6 @@ int nmea_data_time_out = MNLD_GPS_NMEA_DATA_TIMEOUT;
 static int exit_meta_factory = 0;
 static int PDN_test_enable = 0;
 static int in_meta_factory = 0;
-#ifdef CONFIG_GPS_MT3333
-extern MNL_CONFIG_T mnl_config;
-extern int is_ygps_delete_data;
-#endif
 
 static int gps_restart = 0;
 #define M_RESTART 0
@@ -233,9 +183,6 @@ extern UINT8 lppe_enable;
 
 extern int mtk_gps_sys_init();
 extern int mtk_gps_sys_uninit();
-#ifdef CONFIG_GPS_MT3333
-int mnl_set_pwrctl(unsigned char pwrctl);
-#endif
 static int mnld_gps_start_impl(void);
 static int mnld_gps_stop_impl(void);
 static int linux_gps_init(void);
@@ -255,11 +202,6 @@ static int mnld_gps_start(int delete_aiding_data_flags) {
 
     int ret = 0;
     assist_data_bit_map = delete_aiding_data_flags;
-
-#ifdef CONFIG_GPS_MT3333
-	if ((ret = mnl_set_pwrctl(GPS_PWRCTL_ON)))  /*if current state is power off*/
-        return ret;
-#endif
 
     if ((ret = mnld_gps_start_impl())) {
         LOGW("mnld_gps_start() fail, ret=%d", ret);
@@ -316,19 +258,14 @@ static int mnld_gps_delete_aiding_data(int delete_aiding_data_flags) {
     } else if (delete_aiding_data_flags == FLAG_AGPS_AGPS_START) {
         restart.restart_type = MTK_GPS_START_AGPS;
     } else {
-#ifndef CONFIG_GPS_MT3333    
         assist_data_bit_map = delete_aiding_data_flags;
         mtk_gps_delete_nv_data(assist_data_bit_map);
-#endif		
     }
-#ifndef CONFIG_GPS_MT3333
+
     if ((ret = mtk_gps_set_param(MTK_PARAM_CMD_RESTART, &restart))) {
         LOGE("GPS restart fail %d", ret);
     }
-#else
-	is_ygps_delete_data=10;
-	mt3333_controller_delete_aiding_data(delete_aiding_data_flags);
-#endif
+
     gps_restart = 1;
     get_condition(&lock_for_sync[M_RESTART]);
     gps_restart = 0;
@@ -338,172 +275,16 @@ static int mnld_gps_delete_aiding_data(int delete_aiding_data_flags) {
 /////////////////////////////////////////////////////////////////////////////
 
 /*****************************************************************************/
-/*****************************************************************************/
-#ifdef CONFIG_GPS_MT3333
-/*****************************************************************************/
-static int mnl_read_attr(const char *name, unsigned char *attr) {
-    int fd = open(name, O_RDWR);
-    unsigned char buf;
-    int err = 0;
-
-    if (fd == -1) {
-        LOGE("open %s err = %s\n", name, strerror(errno));
-        return err;
-    }
-    do {
-        err = read(fd, &buf, sizeof(buf));
-    } while (err < 0 && errno == EINTR);
-    if (err != sizeof(buf)) {
-        LOGE("read fails = %s\n", strerror(errno));
-        err = -1;
-    } else {
-        err = 0;    /*no error*/
-    }
-    if (close(fd) == -1) {
-        LOGE("close fails = %s\n", strerror(errno));
-        err = (err) ? (err) : (-1);
-    }
-    if (!err)
-        *attr = buf - '0';
-    else
-        *attr = 0xFF;
-    return err;
-}
-
-static int mnl_write_attr(const char *name, unsigned char attr) {
-    int err, fd = open(name, O_RDWR);
-    char buf[] = {attr + '0'};
-
-    if (fd == -1) {
-        LOGE("open %s err = %s\n", name, strerror(errno));
-        return -errno;
-    }
-    do { err = write(fd, buf, sizeof(buf));
-    } while (err < 0 && errno == EINTR);
-
-    if (err != sizeof(buf)) {
-        LOGE("write fails = %s\n", strerror(errno));
-        err = -errno;
-    } else {
-        err = 0;    // no error
-    }
-    if (close(fd) == -1) {
-        LOGE("close fails = %s\n", strerror(errno));
-        err = (err) ? (err) : (-errno);
-    }
-    LOGD("write '%d' to %s okay\n", attr, name);
-    return err;
-}
-
-int mnl_set_pwrctl(unsigned char pwrctl) {
-	LOGE("==> pwrctl = %d\n", pwrctl);
-    if (pwrctl < GPS_PWRCTL_MAX) {
-        return mnl_write_attr(MNL_ATTR_PWRCTL, pwrctl);
-    } else {
-        LOGE("invalid pwrctl = %d\n", pwrctl);
-        errno = -EINVAL;
-        return -1;
-    }
-}
-#endif
-/*****************************************************************************/
-#ifdef CONFIG_GPS_MT3333
-/*****************************************************************************/
-static int mnl_set_state(unsigned char state) {
-
-    int err;
-    if (state < MNL_GPS_STATE_MAX) {
-        if ((err = mnl_write_attr(MNL_ATTR_STATE, state)))
-            return err;
-        return 0;
-    } else {
-        LOGE("invalid state = %d\n", state);
-        errno = -EINVAL;
-        return -1;
-    }
-}
-/*****************************************************************************/
-static int mnl_get_state(unsigned char *state) {
-    return mnl_read_attr(MNL_ATTR_STATE, state);
-}
-/*****************************************************************************/
-int mnl_set_rdelay(int delay) {
-    const char *name = MNL_ATTR_RDELAY;
-	char buf[16]={0};
-	int len=0;
-    int err, fd = open(name, O_RDWR);
-
-	len=sprintf(buf, "%d\n",delay);
-	len+=1;
-	LOGE("len=%d, buf= %s", len, buf);
-	
-    if (fd == -1) {
-        LOGE("open %s err = %s\n", name, strerror(errno));
-        return -errno;
-    }
-    do {
-        err = write(fd, buf, len);
-    } while (err < 0 && errno == EINTR);
-
-    if (err != len) {
-        LOGE("write fails = %s\n", strerror(errno));
-        err = -errno;
-    } else {
-        err = 0;    /*no error*/
-    }
-    if (close(fd) == -1) {
-        LOGE("close fails = %s\n", strerror(errno));
-        err = (err) ? (err) : (-errno);
-    }
-    return err;
-}
-
-int mnl_get_rdelay(void) {
-    const char *name = MNL_ATTR_RDELAY;
-	char buf[16]={0};
-	int len=sizeof(buf);
-	int delay=0;
-    int err, fd = open(name, O_RDWR);
-
-    if (fd == -1) {
-        LOGE("open %s err = %s\n", name, strerror(errno));
-        return -errno;
-    }
-    do {
-        err = read(fd, buf, len);
-    } while (err < 0 && errno == EINTR);
-	LOGE("buf=%s", buf);
-    sscanf(buf,"%d\n", &delay);
-    if (close(fd) == -1) {
-        LOGE("close fails = %s\n", strerror(errno));
-        err = (err) ? (err) : (-errno);
-    }
-	LOGE("delay=%d", delay);
-    return delay;
-}
-
-#endif
-#ifndef CONFIG_GPS_MT3333
 static MNL_CONFIG_T mnld_cfg = {
-#else
-MNL_CONFIG_T mnld_cfg = {
-	.init_speed = 115200,
-    .link_speed = 115200,
-#endif    
     .timeout_init  = MNLD_GPS_START_TIMEOUT,
     .timeout_monitor = MNLD_GPS_NMEA_DATA_TIMEOUT,
     .OFFLOAD_enabled = 0,
     .OFFLOAD_switchMode = 0,    //0: always offload mode  1: Offload/Host-base auto switch mode
 };
-#ifndef CONFIG_GPS_MT3333
+
 static MNL_CONFIG_T mnl_config = {
     .init_speed = 38400,
     .link_speed = 921600,
-#else
-MNL_CONFIG_T mnl_config = {
-    .init_speed = 115200,
-    .link_speed = 115200,
-#endif
     .debug_nmea = 1,
     .debug_mnl  = MNL_NEMA_DEBUG_SENTENCE,  /*MNL_NMEA_DEBUG_NORMAL,*/
     .pmtk_conn  = PMTK_CONNECTION_SOCKET,
@@ -540,7 +321,7 @@ MNL_CONFIG_T mnl_config = {
     .TIME_INTERVAL = 10,
     .u1AgpsMachine = 0,  // default use spirent "0"
     .ACCURACY_SNR = 1,
-    .GNSSOPMode = 1,     // 0: G+G; 1: G+B
+    .GNSSOPMode = 2,     // 0: G+G; 1: G+B
     .dbglog_file_max_size = 25*1024*1024,
     .dbglog_folder_max_size = 300*1024*1024
 };
@@ -591,20 +372,6 @@ void mnl_offload_set_enabled(void) {
 void mnl_offload_clear_enabled(void) {
     mnld_cfg.OFFLOAD_enabled = 0;
 }
-
-#ifdef CONFIG_GPS_MT3333
-extern int fw_downloading; //wangguojun modify
-
-int gps_driver_state_init() {
-    int ret = 0;
-    if(fw_downloading==1)//wangguojun modify
-	return 0;
-    if ((ret = mnl_set_pwrctl(GPS_PWRCTL_OFF)))  /*default power off*/
-        return ret;
-    ret = mnl_set_state(MNL_GPS_STATE_INIT);
-    return ret;
-}
-#endif
 
 /*****************************************************************************
  * FUNCTION
@@ -689,14 +456,13 @@ int mnl_init() {
     }
     lppe_enable=mtk_gps_mnl_info.support_lppe;
     /*setup property*/
-	mnl_utl_load_property(&mnl_config);
     if (!mnl_utl_load_property(&mnld_cfg)) {
         start_time_out = mnld_cfg.timeout_init;
         nmea_data_time_out = mnld_cfg.timeout_monitor;
     }
 
     gps_dbg_log_property_load();
-#ifndef CONFIG_GPS_MT3333
+
     MTK_GPS_SYS_FUNCTION_PTR_T*  mBEE_SYS_FP = &porting_layer_callback;
     if (mtk_gps_sys_function_register(mBEE_SYS_FP) != MTK_GPS_SUCCESS) {
         LOGE("register callback for mnl fail\n");
@@ -704,7 +470,6 @@ int mnl_init() {
     else {
         LOGD("register callback for mnl okey, mtk_gps_sys_function_register=%p\n", mtk_gps_sys_function_register);
     }
-#endif
     LOGD("MNLD can support offload/non-offload, ver = %s.\n", OFL_VER);
     return 0;
 }
@@ -832,9 +597,7 @@ static int mnld_gps_start_impl(void) {
 
     gps_user = mtk_gps_get_gps_user();
     LOGD("gps_user=0x%x\n", gps_user);
-#ifndef CONFIG_GPS_MT3333	
     mtk_gps_ofl_set_user(gps_user);
-#endif
 
     /*initialize system resource (message queue, mutex) used by library*/
     if ((ret = mtk_gps_sys_init())) {
@@ -865,7 +628,6 @@ static int mnld_gps_start_impl(void) {
 }
 
 /*****************************************************************************/
-#ifndef CONFIG_GPS_MT3333
 static int linux_gps_init(void) {
     int clock_type;
     int gnss_mode_flag = 0;
@@ -1430,12 +1192,6 @@ static int linux_gps_init(void) {
 
     unsigned int i = 0;
     INT32 ret = MTK_GPS_ERROR;
-    bool alt_valid = false;
-    float altitude = 0.0f;
-    bool source_valid = true;
-    bool source_gnss = true;
-    bool source_nlp = false;
-    bool source_sensor = false;
     //  if sending profile msg fail, re-try 2-times, each time sleep 10ms
     for (i = 0; i < 3; i++) {
         ret = mtk_agps_set_param(MTK_MSG_AGPS_MSG_PROFILE, &userprofile, MTK_MOD_DISPATCHER, MTK_MOD_AGENT);
@@ -1453,7 +1209,7 @@ static int linux_gps_init(void) {
             LOGD("mnl init, mtk_gps_get_position_accuracy success, %lf, %lf, %d", latitude, longitude, accuracy);
         }
         if (accuracy < 100) {
-            ret_val = mnl2agps_location_sync(latitude, longitude, accuracy, alt_valid, altitude, source_valid, source_gnss, source_nlp, source_sensor);
+            ret_val = mnl2agps_location_sync(latitude, longitude, accuracy);
             if (0 == ret_val) {
                 LOGD("mnl2agps_location_sync success");
             }
@@ -1469,38 +1225,12 @@ static int linux_gps_init(void) {
     }
     return  status;
 }
-#else
-static int linux_gps_init(void) {
- 	// power on gps on another place.
- 	
-#if ANDROID_MNLD_PROP_SUPPORT
-    // strcpy(driver_cfg.mnl_chip_id, chip_id);
-    if (strcmp(chip_id, "0x3333") == 0 ) {
-        LOGD("TCXO\n");
-        if (property_set(GPS_CLOCK_TYPE_P, "90") != 0) {
-			LOGE("set GPS_CLOCK_TYPE_P %s\n", strerror(errno));
-		}
-    }
-#endif
-
-    gps_dbg_log_thread_init();
-#if RAW_DATA_SUPPORT
-    gps_raw_data_enable();
-#endif
-	
-    hasAlmanac();
-
-    return  0;
-}
-#endif
 
 /*****************************************************************************/
 static int mnld_gps_stop_impl(void) {
     int ret = 0;
     LOGD("MNL exiting \n");
-#ifndef CONFIG_GPS_MT3333	
     mtk_gps_mnl_stop();
-#endif
     LOGD("mtk_gps_mnl_stop()\n");
 
     if (g_gpsdbglogThreadExit == false) {
@@ -1509,7 +1239,6 @@ static int mnld_gps_stop_impl(void) {
     if ((ret = mtk_gps_sys_uninit())) {
         LOGE("mtk_gps_sys_uninit err = %d=\n", errno);
     }
-#ifndef CONFIG_GPS_MT3333	
     if (dsp_fd > 0) {
         if (mnl_offload_is_enabled() &&
             (mnld_offload_is_auto_mode() || mnld_offload_is_always_on_mode())) {
@@ -1521,7 +1250,6 @@ static int mnld_gps_stop_impl(void) {
     // cancel alarm
     LOGD("Cancel alarm");
     alarm(0);
-#endif
     return ret;
 }
 
@@ -1555,7 +1283,6 @@ INT32 mtk_gps_sys_gps_mnl_callback(MTK_GPS_NOTIFICATION_TYPE msg) {
             // For NI open GPS
             double dfRtcD = 0.0, dfAge = 0.0;
             send_active_notify();
-#ifndef CONFIG_GPS_MT3333
             if (mtk_gps_get_rtc_info(&dfRtcD, &dfAge) == MTK_GPS_SUCCESS) {
                 LOGD("MTK_GPS_MSG_FIX_READY, GET_RTC_OK, %.3lf, %.3lf\n", dfRtcD, dfAge);
                 LOGD("Age = %d, RTCDiff = %d, Time_interval = %d\n", mnl_config.AVAILIABLE_AGE,
@@ -1679,29 +1406,6 @@ INT32 mtk_gps_sys_gps_mnl_callback(MTK_GPS_NOTIFICATION_TYPE msg) {
                 }
             }
 
-#else
-	 #if RAW_DATA_SUPPORT
-			unsigned char state = MNL_GPS_STATE_UNSUPPORTED;
-			int err = mnl_get_state(&state);
-			if ((err) || (state >= MNL_GPS_STATE_MAX)) {
-				LOGE("mnl_get_state() = %d, %d\n", err, state);
-			}
-
-			/*get gps measurement and clock data*/
-			if (mnld_is_gps_meas_enabled() && state == MNL_GPS_STATE_START) {
-				get_gps_measurement_clock_data();
-				get_gnss_measurement_clock_data();
-				LOGD("gps_meas_enable, mnl state = %d", state);
-			}
-
-			/*get gps navigation event */
-			if (mnld_is_gps_navi_enabled() && state == MNL_GPS_STATE_START) {
-				LOGD("gps_navi_enable, mnl state = %d", state);
-				get_gps_navigation_event();
-				get_gnss_navigation_event();
-			}
-	#endif
-#endif			
         }
         break;
     case MTK_GPS_MSG_FIX_PROHIBITED:
@@ -1848,6 +1552,7 @@ INT32 mtk_gps_sys_agps_disaptcher_callback(UINT16 type, UINT16 length, char *dat
         UINT32 tow;
         UINT32 sys_time;
         char dl_bitmap = 0;
+
     #ifdef QEPO_BD
         if(data != NULL)
         {
@@ -1866,15 +1571,11 @@ INT32 mtk_gps_sys_agps_disaptcher_callback(UINT16 type, UINT16 length, char *dat
             LOGE("QEPO dl request , pointer of data is null!!!\n");
         }
     #else
-		#ifndef CONFIG_GPS_MT3333
         ret = mtk_agps_agent_qepo_get_rqst_time(&wn, &tow, &sys_time);
-		#else
-		ret = mt3333_controller_Utc2GpsTime(&wn, &tow, &sys_time);
-		#endif
         LOGD("wn, tow, sys_time = %d, %d, %d\n", wn, tow, sys_time);
         gps_mnl_set_gps_time(wn, tow, sys_time);
         qepo_downloader_start();
-    #endif	
+    #endif
     }else if (type == MTK_AGPS_CB_MTKNAV_DOWNLOAD_REQ) {
         if(mtknav_downloader_start() == -1){
             LOGW("mtknav downloader start fail");
@@ -2065,7 +1766,6 @@ void print_gnss_nav_msg(gnss_nav_msg in) {
     LOGD("data_length=%d", in.data_length);
 }
 
-#ifndef CONFIG_GPS_MT3333
 static void get_gps_measurement_clock_data() {
     LOGD("get_gps_measurement_clock_data begin");
 
@@ -2197,144 +1897,6 @@ static void get_gps_navigation_event() {
         LOGD("mnl2hal_gps_navigation done ,ret = %d", ret);
     }
 }
-#else
- void get_gps_measurement_clock_data() {
-    LOGD("get_gps_measurement_clock_data begin");
-
-    int i;
-    int num = 0;
-    int ret;
-    gps_data gpsdata;
-    MTK_GPS_MEASUREMENT mtk_gps_measurement[GPS_MAX_MEASUREMENT];
-    INT8 ch_proc_ord_prn[GPS_MAX_MEASUREMENT]={0};
-
-	memset(mtk_gps_measurement,0,sizeof(mtk_gps_measurement));
-	
-    LOGD("sizeof(mtk_gps_get_measurement) = %d,sizeof(mtk_gps_get_measurement[0]) = %d\n",
-        sizeof(mtk_gps_measurement), sizeof(mtk_gps_measurement[0]));
-
-    MTK_GPS_CLOCK mtk_gps_clock;
-    ret = 0;
-	memset(&mtk_gps_clock,0,sizeof(mtk_gps_clock));
-    if (ret == 0) {
-        LOGD("mtk_gps_get_clock fail,[ret=%d]\n", ret);
-    }
-
-    gps_clock gpsclock;
-    memset(&gpsclock, 0, sizeof(gps_clock));
-    // gpsclock.size = sizeof(gps_clock);
-    gpsclock.bias_ns = mtk_gps_clock.BiasInNs;
-    gpsclock.bias_uncertainty_ns = mtk_gps_clock.BiasUncertaintyInNs;
-    gpsclock.drift_nsps = mtk_gps_clock.DriftInNsPerSec;
-    gpsclock.flags = mtk_gps_clock.flag;
-    gpsclock.leap_second = mtk_gps_clock.leapsecond;
-    gpsclock.time_ns = mtk_gps_clock.TimeInNs;
-    gpsclock.time_uncertainty_ns = mtk_gps_clock.TimeUncertaintyInNs;
-    gpsclock.type = mtk_gps_clock.type;
-    gpsclock.full_bias_ns = mtk_gps_clock.FullBiasInNs;
-    gpsclock.drift_uncertainty_nsps = mtk_gps_clock.DriftUncertaintyInNsPerSec;
-    if (gps_raw_debug_mode) {
-        print_gps_clock(gpsclock);
-    }
-
-    memset(&gpsdata, 0, sizeof(gps_data));
-    // gpsdata.size = sizeof(gps_data);
-    for (i = 0; i < GPS_MAX_MEASUREMENT; i++) {
-        if (mtk_gps_measurement[i].PRN != 0) {
-            num = gpsdata.measurement_count;
-
-            // gpsdata.measurements[num].size = sizeof(gps_measurement);
-            gpsdata.measurements[num].accumulated_delta_range_m = mtk_gps_measurement[i].AcDRInMeters;
-            gpsdata.measurements[num].accumulated_delta_range_state = mtk_gps_measurement[i].AcDRState10;
-            gpsdata.measurements[num].accumulated_delta_range_uncertainty_m = \
-            mtk_gps_measurement[i].AcDRUnInMeters;
-            gpsdata.measurements[num].azimuth_deg = mtk_gps_measurement[i].AzInDeg;
-            gpsdata.measurements[num].azimuth_uncertainty_deg = mtk_gps_measurement[i].AzUnInDeg;
-            gpsdata.measurements[num].bit_number = mtk_gps_measurement[i].BitNumber;
-            gpsdata.measurements[num].carrier_cycles = mtk_gps_measurement[i].CarrierCycle;
-            gpsdata.measurements[num].carrier_phase = mtk_gps_measurement[i].CarrierPhase;
-            gpsdata.measurements[num].carrier_phase_uncertainty = mtk_gps_measurement[i].CarrierPhaseUn;
-            gpsdata.measurements[num].carrier_frequency_hz = mtk_gps_measurement[i].CFInhZ;
-            gpsdata.measurements[num].c_n0_dbhz = mtk_gps_measurement[i].Cn0InDbHz;
-            gpsdata.measurements[num].code_phase_chips = mtk_gps_measurement[i].CPInChips;
-            gpsdata.measurements[num].code_phase_uncertainty_chips = mtk_gps_measurement[i].CPUnInChips;
-            gpsdata.measurements[num].doppler_shift_hz = mtk_gps_measurement[i].DopperShiftInHz;
-            gpsdata.measurements[num].doppler_shift_uncertainty_hz = mtk_gps_measurement[i].DopperShiftUnInHz;
-            gpsdata.measurements[num].elevation_deg = mtk_gps_measurement[i].ElInDeg;
-            gpsdata.measurements[num].elevation_uncertainty_deg = mtk_gps_measurement[i].ElUnInDeg;
-            gpsdata.measurements[num].flags = mtk_gps_measurement[i].flag;
-            gpsdata.measurements[num].loss_of_lock = mtk_gps_measurement[i].LossOfLock;
-            gpsdata.measurements[num].multipath_indicator = mtk_gps_measurement[i].MultipathIndicater;
-            gpsdata.measurements[num].pseudorange_m = mtk_gps_measurement[i].PRInMeters;
-            gpsdata.measurements[num].prn = mtk_gps_measurement[i].PRN;
-            gpsdata.measurements[num].pseudorange_rate_mps = mtk_gps_measurement[i].PRRateInMeterPreSec;
-            gpsdata.measurements[num].pseudorange_rate_uncertainty_mps = \
-            mtk_gps_measurement[i].PRRateUnInMeterPreSec;
-            gpsdata.measurements[num].pseudorange_uncertainty_m = mtk_gps_measurement[i].PRUnInMeters;
-            gpsdata.measurements[num].received_gps_tow_ns = mtk_gps_measurement[i].ReGpsTowInNs;
-            gpsdata.measurements[num].received_gps_tow_uncertainty_ns = mtk_gps_measurement[i].ReGpsTowUnInNs;
-            gpsdata.measurements[num].snr_db = mtk_gps_measurement[i].SnrInDb;
-            gpsdata.measurements[num].state = mtk_gps_measurement[i].state;
-            gpsdata.measurements[num].time_from_last_bit_ms = mtk_gps_measurement[i].TimeFromLastBitInMs;
-            gpsdata.measurements[num].time_offset_ns = mtk_gps_measurement[i].TimeOffsetInNs;
-            gpsdata.measurements[num].used_in_fix = mtk_gps_measurement[i].UsedInFix;
-            if (gpsdata.measurements[num].state == 0) {
-                gpsdata.measurements[num].received_gps_tow_ns = 0;
-                gpsdata.measurements[num].pseudorange_rate_mps = 1;
-            }
-            LOGD("gpsdata measurements[%d] memcpy completed, old _num = %d, prn = %d\n",
-                num, i, gpsdata.measurements[num].prn);
-            if (gps_raw_debug_mode) {
-                print_gps_measurement(gpsdata.measurements[num]);
-            }
-            gpsdata.measurement_count++;
-        }
-    }
-    memcpy(&gpsdata.clock , &gpsclock, sizeof(gpsclock));
-    if (gpsdata.measurement_count > 0) {
-        ret = mnl2hal_gps_measurements(gpsdata);
-        LOGD("mnl2hal_gps_measurements done ,ret = %d", ret);
-    }
-}
- void get_gps_navigation_event() {
-    LOGD("get_gps_navigation_event begin");
-
-    int svid;
-    int i;
-    int ret;
-    MTK_GPS_NAVIGATION_EVENT gps_navigation_event;
-    gps_nav_msg gpsnavigation;
-
-    for (svid = 0; svid < GPS_MAX_MEASUREMENT; svid++) {
-        ret = 0;
-		
-        if (ret == 0) {
-            LOGD("mtk_gps_get_navigation_event fail,SVID = %d,[ret=%d]\n", svid, ret);
-            memset(&gps_navigation_event, 0, sizeof(MTK_GPS_NAVIGATION_EVENT));
-        }
-
-        memset(&gpsnavigation, 0, sizeof(gps_nav_msg));
-        // gpsnavigation.size = sizeof(gps_nav_msg);
-        gpsnavigation.prn = svid+1;
-        gpsnavigation.type = GPS_NAV_MSG_TYPE_L1CA;
-        gpsnavigation.message_id = 1;
-        gpsnavigation.submessage_id = 1;
-        gpsnavigation.data_length = sizeof(gps_navigation_event.data);
-        memcpy(gpsnavigation.data, gps_navigation_event.data, sizeof(gps_navigation_event.data));
-
-        if (gps_raw_debug_mode) {
-            print_gps_nav_msg(gpsnavigation);
-            for (i = 0; i < 40; i++) {
-                LOGD("gpsnavigation.data[%d] = %x, %p",
-                    i, gpsnavigation.data[i], &gpsnavigation.data[i]);
-            }
-        }
-        ret = mnl2hal_gps_navigation(gpsnavigation);
-        LOGD("mnl2hal_gps_navigation done ,ret = %d", ret);
-    }
-}
-
-#endif
 
 static void update_gnss_measurement(gnss_measurement* dst, Gnssmeasurement* src) {
     LOGD("update_gnss_measurement begin");
@@ -2398,7 +1960,6 @@ static void update_gnss_navigation(gnss_nav_msg* dst, GnssNavigationmessage* src
     }
 }
 
-#ifndef CONFIG_GPS_MT3333
 static void get_gnss_measurement_clock_data() {
     LOGD("get_gnss_measurement_clock_data begin");
 
@@ -2628,419 +2189,6 @@ static void get_gnss_navigation_event() {
         LOGD("Galileo sv, mnl2hal_gnss_navigation done ,ret = %d", ret);
     }
 }
-
-#else
-gnss_sv_info cts_sv_data;
-
- void get_gnss_measurement_clock_data() {
-    LOGD("get_gnss_measurement_clock_data begin");
-
-    int i;
-    int num = 0;
-    int ret;
-	int cnt;
-    gnss_data gnssdata;
-    Gnssmeasurement gpqzmeasurement[40];
-    Gnssmeasurement glomeasurement[24];
-    Gnssmeasurement bdmeasurement[37];
-    Gnssmeasurement galmeasurement[36];
-    Gnssmeasurement sbasmeasurement[42];
-
-    INT8 GpQz_Ch_Proc_Ord_PRN[40] = {0};
-    INT8 Glo_Ch_Proc_Ord_PRN[24] = {0};
-    INT8 BD_Ch_Proc_Ord_PRN[37] = {0};
-    INT8 Gal_Ch_Proc_Ord_PRN[36] = {0};
-    INT8 SBAS_Ch_Proc_Ord_PRN[42] = {0};
-
-	
-	
-
-    for (i = 0; i < 40; i++) {
-		gpqzmeasurement[i].accumulated_delta_range_m=0;
-		gpqzmeasurement[i].accumulated_delta_range_state=0x0;
-		gpqzmeasurement[i].accumulated_delta_range_uncertainty_m=0;
-		gpqzmeasurement[i].carrier_cycles=0;
-		gpqzmeasurement[i].carrier_frequency_hz=1575420032.000000;
-		gpqzmeasurement[i].carrier_phase=0;
-		gpqzmeasurement[i].carrier_phase_uncertainty=0;
-
-		gpqzmeasurement[i].svid=0;
-		gpqzmeasurement[i].snr_db=0;
-		gpqzmeasurement[i].constellation=0;
-		gpqzmeasurement[i].c_n0_dbhz=0 ;
-		for(cnt=cts_sv_data.num_svs; cnt>0; cnt--){
-			if(cts_sv_data.sv_list[cnt-1].svid == (i+1)){
-				if(cts_sv_data.sv_list[cnt-1].c_n0_dbhz - 17 < 0){
-					gpqzmeasurement[i].snr_db=0;
-				}else{
-					gpqzmeasurement[i].snr_db=cts_sv_data.sv_list[cnt-1].c_n0_dbhz - 17;
-				}
-				
-				gpqzmeasurement[i].constellation=cts_sv_data.sv_list[cnt-1].constellation;
-				gpqzmeasurement[i].c_n0_dbhz=cts_sv_data.sv_list[cnt-1].c_n0_dbhz ;
-				if(gpqzmeasurement[i].c_n0_dbhz <= 5.0){
-					gpqzmeasurement[i].svid=0;
-				}else{
-					gpqzmeasurement[i].svid=cts_sv_data.sv_list[cnt-1].svid;
-				}
-				break;
-			}
-			
-		}
-		
-		gpqzmeasurement[i].flags=0x40201;
-		gpqzmeasurement[i].multipath_indicator=0;
-		gpqzmeasurement[i].pseudorange_rate_mps=14522.145508;
-		gpqzmeasurement[i].pseudorange_rate_uncertainty_mps=0.150000;
-		gpqzmeasurement[i].received_sv_time_in_ns=20000;
-		gpqzmeasurement[i].received_sv_time_uncertainty_in_ns=33353074;
-		gpqzmeasurement[i].size=sizeof(gpqzmeasurement[i]);
-		gpqzmeasurement[i].state=0x02;
-		gpqzmeasurement[i].time_offset_ns=421235.186561;
-	}
-
-	for (i = 0; i < 24; i++) {
-		glomeasurement[i].accumulated_delta_range_m=0;
-		glomeasurement[i].accumulated_delta_range_state=0x0;
-		glomeasurement[i].accumulated_delta_range_uncertainty_m=0;
-		glomeasurement[i].carrier_cycles=0;
-		glomeasurement[i].carrier_frequency_hz=1575420032.000000;
-		glomeasurement[i].carrier_phase=0;
-		glomeasurement[i].carrier_phase_uncertainty=0;
-
-		glomeasurement[i].svid=0;
-		glomeasurement[i].snr_db=0;
-		glomeasurement[i].constellation=0;
-		glomeasurement[i].c_n0_dbhz=0 ;
-		for(cnt=cts_sv_data.num_svs; cnt>0; cnt--){
-			if(cts_sv_data.sv_list[cnt-1].svid == (i+65)){
-				if(cts_sv_data.sv_list[cnt-1].c_n0_dbhz - 17 < 0){
-					glomeasurement[i].snr_db=0;
-				}else{
-					glomeasurement[i].snr_db=cts_sv_data.sv_list[cnt-1].c_n0_dbhz - 17;
-				}
-				
-				glomeasurement[i].constellation=cts_sv_data.sv_list[cnt-1].constellation;
-				glomeasurement[i].c_n0_dbhz=cts_sv_data.sv_list[cnt-1].c_n0_dbhz ;
-				if(glomeasurement[i].c_n0_dbhz <= 5.0){
-					glomeasurement[i].svid=0;
-				}else{
-					glomeasurement[i].svid=cts_sv_data.sv_list[cnt-1].svid - 65 + 1;
-				}
-				break;
-			}
-			
-		}
-		
-		glomeasurement[i].flags=0x40201;
-		glomeasurement[i].multipath_indicator=0;
-		glomeasurement[i].pseudorange_rate_mps=14522.145508;
-		glomeasurement[i].pseudorange_rate_uncertainty_mps=0.150000;
-		glomeasurement[i].received_sv_time_in_ns=20000;
-		glomeasurement[i].received_sv_time_uncertainty_in_ns=33353074;
-		glomeasurement[i].size=sizeof(glomeasurement[i]);
-		glomeasurement[i].state=0x02;
-		glomeasurement[i].time_offset_ns=421235.186561;
-	}
-	for (i = 0; i < 37; i++) {
-		bdmeasurement[i].accumulated_delta_range_m=0;
-		bdmeasurement[i].accumulated_delta_range_state=0x0;
-		bdmeasurement[i].accumulated_delta_range_uncertainty_m=0;
-		bdmeasurement[i].carrier_cycles=0;
-		bdmeasurement[i].carrier_frequency_hz=1575420032.000000;
-		bdmeasurement[i].carrier_phase=0;
-		bdmeasurement[i].carrier_phase_uncertainty=0;
-
-		bdmeasurement[i].svid=0;
-		bdmeasurement[i].snr_db=0;
-		bdmeasurement[i].constellation=0;
-		bdmeasurement[i].c_n0_dbhz=0 ;
-		for(cnt=cts_sv_data.num_svs; cnt>0; cnt--){
-			if(cts_sv_data.sv_list[cnt-1].svid == (i+201)){
-				if(cts_sv_data.sv_list[cnt-1].c_n0_dbhz - 17 < 0){
-					bdmeasurement[i].snr_db=0;
-				}else{
-					bdmeasurement[i].snr_db=cts_sv_data.sv_list[cnt-1].c_n0_dbhz - 17;
-				}
-				
-				bdmeasurement[i].constellation=cts_sv_data.sv_list[cnt-1].constellation;
-				bdmeasurement[i].c_n0_dbhz=cts_sv_data.sv_list[cnt-1].c_n0_dbhz ;
-				if(bdmeasurement[i].c_n0_dbhz <= 5.0){
-					bdmeasurement[i].svid=0;
-				}else{
-					bdmeasurement[i].svid=cts_sv_data.sv_list[cnt-1].svid - 201 + 1;
-				}
-				break;
-			}
-			
-		}
-		
-		bdmeasurement[i].flags=0x40201;
-		bdmeasurement[i].multipath_indicator=0;
-		bdmeasurement[i].pseudorange_rate_mps=14522.145508;
-		bdmeasurement[i].pseudorange_rate_uncertainty_mps=0.150000;
-		bdmeasurement[i].received_sv_time_in_ns=20000;
-		bdmeasurement[i].received_sv_time_uncertainty_in_ns=33353074;
-		bdmeasurement[i].size=sizeof(bdmeasurement[i]);
-		bdmeasurement[i].state=0x02;
-		bdmeasurement[i].time_offset_ns=421235.186561;
-	}
-	for (i = 0; i < 36; i++) {
-		memset(galmeasurement,0,sizeof(galmeasurement));
-	}
-	for (i = 0; i < 42; i++) {
-		memset(sbasmeasurement,0,sizeof(sbasmeasurement));
-	}
-
-    Gnssclock gnssclock;
-	memset(&gnssclock,0,sizeof(gnssclock));
-	gnssclock.bias_ns=0.186561;
-	gnssclock.bias_uncertainty_ns=609.745098;
-	gnssclock.drift_nsps=7183.074831;
-	gnssclock.drift_uncertainty_nsps=16.441889;
-	gnssclock.flags=0x01;
-	gnssclock.full_bias_ns=421235;
-	gnssclock.hw_clock_discontinuity_count=0;
-	gnssclock.leap_second=18;
-	gnssclock.size=sizeof(gnssclock);
-	gnssclock.time_ns=1185356046700000000;
-	gnssclock.time_uncertainty_ns=33353073.878863;
-	
-    gnss_clock gnss_clock;
-    memset(&gnss_clock, 0, sizeof(gnss_clock));
-    update_gnss_clock(&gnss_clock, &gnssclock);
-
-
-    memset(&gnssdata, 0, sizeof(gnssdata));
-    // For GPS & QZSS
-    for (i = 0; i < 40; i++) {
-        if (gpqzmeasurement[i].svid != 0) {
-            num = gnssdata.measurement_count;
-            if (num >= MTK_MNLD_GNSS_MAX_MEASUREMENT) {
-                LOGD("measurement_count exceed the upper limit!");
-                break;
-            }
-
-            update_gnss_measurement(&gnssdata.measurements[num], &gpqzmeasurement[i]);
-            if (gnssdata.measurements[num].state == 0) {
-                gnssdata.measurements[num].pseudorange_rate_mps = 1;
-            }
-            gnssdata.measurement_count++;
-            LOGD("gnssdata measurements[%d] memcpy completed, old _num = %d, prn = %d\n",
-                num, i, gnssdata.measurements[num].svid);
-        }
-    }
-
-    // For Glonass
-    for (i = 0; i < 24; i++) {
-        if (glomeasurement[i].svid != 0) {
-            num = gnssdata.measurement_count;
-            if (num >= MTK_MNLD_GNSS_MAX_MEASUREMENT) {
-                LOGD("measurement_count exceed the upper limit!");
-                break;
-            }
-
-            update_gnss_measurement(&gnssdata.measurements[num], &glomeasurement[i]);
-            if (gnssdata.measurements[num].state == 0) {
-                gnssdata.measurements[num].pseudorange_rate_mps = 1;
-            }
-            gnssdata.measurement_count++;
-            LOGD("gnssdata measurements[%d] memcpy completed, old _num = %d, prn = %d\n",
-                num, i, gnssdata.measurements[num].svid);
-        }
-    }
-
-    // For Beidou
-    for (i = 0; i < 37; i++) {
-        if (bdmeasurement[i].svid != 0) {
-            num = gnssdata.measurement_count;
-            if (num >= MTK_MNLD_GNSS_MAX_MEASUREMENT) {
-                LOGD("measurement_count exceed the upper limit!");
-                break;
-            }
-
-            update_gnss_measurement(&gnssdata.measurements[num], &bdmeasurement[i]);
-            if (gnssdata.measurements[num].state == 0) {
-                gnssdata.measurements[num].pseudorange_rate_mps = 1;
-            }
-            gnssdata.measurement_count++;
-            LOGD("gnssdata measurements[%d] memcpy completed, old _num = %d, prn = %d\n",
-                num, i, gnssdata.measurements[num].svid);
-        }
-    }
-
-    // For Galileo
-    for (i = 0; i < 36; i++) {
-        if (galmeasurement[i].svid != 0) {
-            num = gnssdata.measurement_count;
-            if (num >= MTK_MNLD_GNSS_MAX_MEASUREMENT) {
-                LOGD("measurement_count exceed the upper limit!");
-                break;
-            }
-
-            update_gnss_measurement(&gnssdata.measurements[num], &galmeasurement[i]);
-            if (gnssdata.measurements[num].state == 0) {
-                gnssdata.measurements[num].pseudorange_rate_mps = 1;
-            }
-            gnssdata.measurement_count++;
-            LOGD("gnssdata measurements[%d] memcpy completed, old _num = %d, prn = %d\n",
-                num, i, gnssdata.measurements[num].svid);
-        }
-    }
-
-    // For SBAS
-    for (i = 0; i < 42; i++) {
-        if (sbasmeasurement[i].svid != 0) {
-            num = gnssdata.measurement_count;
-            if (num >= MTK_MNLD_GNSS_MAX_MEASUREMENT) {
-                LOGD("measurement_count exceed the upper limit!");
-                break;
-            }
-
-            update_gnss_measurement(&gnssdata.measurements[num], &sbasmeasurement[i]);
-            if (gnssdata.measurements[num].state == 0) {
-                gnssdata.measurements[num].pseudorange_rate_mps = 1;
-            }
-            gnssdata.measurement_count++;
-            LOGD("gnssdata measurements[%d] memcpy completed, old _num = %d, prn = %d\n",
-                num, i, gnssdata.measurements[num].svid);
-        }
-    }
-
-    memcpy(&gnssdata.clock , &gnss_clock, sizeof(gnss_clock));
-    LOGD("gnssdata.measurement_count = %d, sizeof(gnssdata) = %d", gnssdata.measurement_count, sizeof(gnssdata));
-    if (gnssdata.measurement_count > 0) {
-        ret = mnl2hal_gnss_measurements(gnssdata);
-        LOGD("mnl2hal_gnss_measurements done ,ret = %d", ret);
-    }
-
-	memset(&cts_sv_data,0,sizeof(cts_sv_data));
-}
-
- void get_gnss_navigation_event() {
-    LOGD("get_gnss_navigation_event begin");
-
-    int svid;
-    int i;
-    int ret;
-    GnssNavigationmessage gnss_navigation_msg;
-    gnss_nav_msg gnssnavigation;
-
-    // GPS
-    for (svid = 1; svid <= GPS_MAX_MEASUREMENT; svid++) {
-        ret = 0;
-		gnss_navigation_msg.data_length=40;
-		gnss_navigation_msg.message_id=1;
-		gnss_navigation_msg.submessage_id=1;
-		gnss_navigation_msg.size=sizeof(gnss_navigation_msg);
-		gnss_navigation_msg.status=0x0;
-		gnss_navigation_msg.svid=svid;
-		gnss_navigation_msg.type=GNSS_NAVIGATION_MESSAGE_TYPE_GPS_L1CA;
-        if (ret == 0) {
-            LOGD("mtk_gnss_get_navigation_event GPS sv fail, svid = %d,[ret=%d]\n", svid, ret);
-            memset(&gnss_navigation_msg, 0, sizeof(GnssNavigationmessage));
-        }
-
-        memset(&gnssnavigation, 0, sizeof(gnss_nav_msg));
-        update_gnss_navigation(&gnssnavigation, &gnss_navigation_msg);
-        memcpy(gnssnavigation.data, gnss_navigation_msg.uData.GP_data, gnssnavigation.data_length);
-        if (gps_raw_debug_mode) {
-            for (i = 0; i < 40; i++) {
-                LOGD("GPS sv gnssnavigation.data[%d] = %x, %p",
-                i, gnssnavigation.data[i], &gnssnavigation.data[i]);
-            }
-        }
-        ret = mnl2hal_gnss_navigation(gnssnavigation);
-        LOGD("GPS sv, mnl2hal_gnss_navigation done ,ret = %d", ret);
-    }
-
-    // glonass
-    for (svid = 1; svid <= 24; svid++) {
-        ret = 0;
-		gnss_navigation_msg.data_length=12;
-		gnss_navigation_msg.message_id=1;
-		gnss_navigation_msg.submessage_id=1;
-		gnss_navigation_msg.size=sizeof(gnss_navigation_msg);
-		gnss_navigation_msg.status=0x0;
-		gnss_navigation_msg.svid=svid;
-		gnss_navigation_msg.type=GNSS_NAVIGATION_MESSAGE_TYPE_GLO_L1CA;
-        if (ret == 0) {
-            LOGD("mtk_gnss_get_navigation_event Glonass sv fail, svid = %d,[ret=%d]\n", svid, ret);
-            memset(&gnss_navigation_msg, 0, sizeof(GnssNavigationmessage));
-        }
-
-        memset(&gnssnavigation, 0, sizeof(gnss_nav_msg));
-        update_gnss_navigation(&gnssnavigation, &gnss_navigation_msg);
-        memcpy(gnssnavigation.data, gnss_navigation_msg.uData.GL_data, gnssnavigation.data_length);
-        if (gps_raw_debug_mode) {
-            for (i = 0; i < 12; i++) {
-                LOGD("Glonass sv gnssnavigation.data[%d] = %x, %p",
-                i, gnssnavigation.data[i], &gnssnavigation.data[i]);
-            }
-        }
-        ret = mnl2hal_gnss_navigation(gnssnavigation);
-        LOGD("Glonass sv, mnl2hal_gnss_navigation done ,ret = %d", ret);
-    }
-
-    // beidou
-    for (svid = 1; svid <= 37; svid++) {
-        ret = 0;
-		gnss_navigation_msg.data_length=40;
-		gnss_navigation_msg.message_id=1;
-		gnss_navigation_msg.submessage_id=1;
-		gnss_navigation_msg.size=sizeof(gnss_navigation_msg);
-		gnss_navigation_msg.status=0x0;
-		gnss_navigation_msg.svid=svid;
-		gnss_navigation_msg.type=GNSS_NAVIGATION_MESSAGE_TYPE_BDS_D1;
-        if (ret == 0) {
-            LOGD("mtk_gnss_get_navigation_event BD sv fail, svid = %d,[ret=%d]\n", svid, ret);
-            memset(&gnss_navigation_msg, 0, sizeof(GnssNavigationmessage));
-        }
-
-        memset(&gnssnavigation, 0, sizeof(gnss_nav_msg));
-        update_gnss_navigation(&gnssnavigation, &gnss_navigation_msg);
-        memcpy(gnssnavigation.data, gnss_navigation_msg.uData.BD_data, gnssnavigation.data_length);
-        if (gps_raw_debug_mode) {
-            for (i = 0; i < 40; i++) {
-                LOGD("BD sv gnssnavigation.data[%d] = %x, %p",
-                i, gnssnavigation.data[i], &gnssnavigation.data[i]);
-            }
-        }
-        ret = mnl2hal_gnss_navigation(gnssnavigation);
-        LOGD("BD sv, mnl2hal_gnss_navigation done ,ret = %d", ret);
-    }
-
-    // galileo
-    for (svid = 1; svid <= 36; svid++) {
-        ret = 0;
-		gnss_navigation_msg.data_length=40;
-		gnss_navigation_msg.message_id=1;
-		gnss_navigation_msg.submessage_id=1;
-		gnss_navigation_msg.size=sizeof(gnss_navigation_msg);
-		gnss_navigation_msg.status=0x0;
-		gnss_navigation_msg.svid=svid;
-		gnss_navigation_msg.type=GNSS_NAVIGATION_MESSAGE_TYPE_GAL_I;
-        if (ret == 0) {
-            LOGD("mtk_gnss_get_navigation_event Galileo sv fail, svid = %d,[ret=%d]\n", svid, ret);
-            memset(&gnss_navigation_msg, 0, sizeof(GnssNavigationmessage));
-        }
-
-        memset(&gnssnavigation, 0, sizeof(gnss_nav_msg));
-        update_gnss_navigation(&gnssnavigation, &gnss_navigation_msg);
-        memcpy(gnssnavigation.data, gnss_navigation_msg.uData.GA_data, gnssnavigation.data_length);
-        if (gps_raw_debug_mode) {
-            for (i = 0; i < 40; i++) {
-                LOGD("Galileo sv gnssnavigation.data[%d] = %x, %p",
-                i, gnssnavigation.data[i], &gnssnavigation.data[i]);
-            }
-        }
-        ret = mnl2hal_gnss_navigation(gnssnavigation);
-        LOGD("Galileo sv, mnl2hal_gnss_navigation done ,ret = %d", ret);
-    }
-}
-
-#endif
-
 
 #endif
 
@@ -3302,11 +2450,6 @@ void linux_signal_handler(int signo) {
                 // flp_test2mnl_gps_start();
                 mnld_gps_start(FLAG_HOT_START);
             }
-#ifdef CONFIG_GPS_MT3333
-			else{
-				mnld_gps_stop();
-			}
-#endif
             exit_meta_factory = 1;
         }
     }
@@ -3354,17 +2497,11 @@ int mnld_factory_test_entry(int argc, char** argv) {
         } else {
             LOGD("MNL is offload, for meta/factory mode");
             // factory_mnld_gps_start();
-#ifdef CONFIG_GPS_MT3333
-		mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_FACTORYMETA);
-#endif
             mnld_gps_start(FLAG_HOT_START);
         }
     } else {
         LOGD("MNL is offload, for meta/factory mode");
         // factory_mnld_gps_start();
-#ifdef CONFIG_GPS_MT3333
-		mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_FACTORYMETA);
-#endif
         mnld_gps_start(FLAG_HOT_START);
     }
     while (1) {

@@ -54,7 +54,6 @@ static int          FlpLocNum=0;
 static int          FlpLocBegin=0;
 static int          FlpLocEnd=0;
 static char         fgtimerStarted = 0;
-static char         fgtimerInit = 0;
 static timer_t batch_loc_timer;
 
 
@@ -156,11 +155,7 @@ int mtk_flp_init(FlpCallbacks* callbacks) {
     } else {
         LOGE("mtkFlpCallbacks.flp_capabilities_cb not set!!");
     }
-    if(!fgtimerInit) {
     batch_loc_timer = init_timer(flp_timeout_handler);
-        fgtimerInit = 1;
-    }
-
     flphal2mnl_flp_init();
     ret = mnl2flphal_flp_init();
     return ret;

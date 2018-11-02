@@ -47,12 +47,6 @@ int get_gps_cmcc_log_enabled();
 
 bool mnld_timeout_ne_enabled(void);
 
-#ifdef CONFIG_GPS_MT3333
-int mnl_set_pwrctl(unsigned char pwrctl);
-int mnl_set_rdelay(int delay) ;
-int mnl_get_rdelay(void) ;
-#endif
-
 #ifdef __cplusplus
 }
 #endif

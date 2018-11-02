@@ -40,7 +40,6 @@ typedef struct {
     void (*set_gps_measurement)(bool enabled);
     void (*set_gps_navigation)(bool enabled);
     void (*set_vzw_debug)(bool enabled);
-	void (*set_satellite_mode)(int mode);
 } hal2mnl_interface;
 
 int mnl2hal_mnld_reboot();

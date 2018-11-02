@@ -23,9 +23,6 @@
 #include "qepo.h"
 #include "mtknav.h"
 #include "op01_log.h"
-#ifdef CONFIG_GPS_MT3333
-#include "mt3333_controller.h"
-#endif
 #include "mtk_flp_main.h"
 #include "mnl_flp_test_interface.h"
 #include "mtk_geofence_main.h"
@@ -441,12 +438,10 @@ static void fsm_gps_state_idle(mnld_gps_event event, int data1, int data2, void*
             LOGE("still enable start timer");
             start_timer(g_mnld_ctx.gps_status.timer_start, start_time_out);
         } else {
-        	LOGE("GPS_EVENT_START: g_mnld_ctx.gps_status.timer_start");
             start_timer(g_mnld_ctx.gps_status.timer_start, start_time_out);
         }
         gps_control_gps_start(g_mnld_ctx.gps_status.delete_aiding_flag);
         g_mnld_ctx.gps_status.delete_aiding_flag = 0;
-		mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_REQUES1STNMEA);
         break;
     }
     case GPS_EVENT_STOP: {
@@ -480,7 +475,6 @@ static void fsm_gps_state_idle(mnld_gps_event event, int data1, int data2, void*
             LOGE("still enable start timer");
             start_timer(g_mnld_ctx.gps_status.timer_start, start_time_out);
         } else {
-        	LOGE("GPS_EVENT_OFFLOAD_START: g_mnld_ctx.gps_status.timer_start");
             start_timer(g_mnld_ctx.gps_status.timer_start, start_time_out);
         }
         gps_control_gps_start(g_mnld_ctx.gps_status.delete_aiding_flag);
@@ -488,9 +482,9 @@ static void fsm_gps_state_idle(mnld_gps_event event, int data1, int data2, void*
         break;
     }
     case GPS_EVENT_START_DONE:
-        //Need fix by MNL,it will send MTK_AGPS_CB_START_REQ to mnld when stopping or started.
-        LOGE("fsm_gps_state_stopping() unexpected event=%d", event);
-        break;
+        // Need fix by MNL,it will send MTK_AGPS_CB_START_REQ to mnld when stopping or started.
+        // LOGE("fsm_gps_state_stopping() unexpected event=%d", event);
+        // break;
     case GPS_EVENT_STOP_DONE:
     default: {
         LOGE("fsm_gps_state_idle() unexpected gps_event=%d", event);
@@ -528,7 +522,6 @@ static void fsm_gps_state_starting(mnld_gps_event event, int data1, int data2, v
         break;
     }
     case GPS_EVENT_START_DONE: {
-		LOGD("GPS_EVENT_START_DONE: g_mnld_ctx.gps_status.timer_start\n");
         stop_timer(g_mnld_ctx.gps_status.timer_start);
         do_gps_started_hdlr(data1);
         if (is_all_gps_client_exit()) {
@@ -656,7 +649,6 @@ static void fsm_gps_state_stopping(mnld_gps_event event, int data1, int data2, v
             (mnld_offload_is_auto_mode() || mnld_offload_is_always_on_mode())) {
                 LOGE("gps_user: %d\n", gps_user);
             } else {
-            	LOGE("GPS_EVENT_STOP_DONE: g_mnld_ctx.gps_status.timer_start");
                 start_timer(g_mnld_ctx.gps_status.timer_start, start_time_out);
             }
             gps_control_gps_start(g_mnld_ctx.gps_status.delete_aiding_flag);
@@ -739,7 +731,6 @@ static void fsm_gps_state_ofl_starting(mnld_gps_event event, int data1, int data
         break;
     }
     case GPS_EVENT_START_DONE: {
-		LOGE("GPS_EVENT_START_DONE: g_mnld_ctx.gps_status.timer_start");
         stop_timer(g_mnld_ctx.gps_status.timer_start);
         do_gps_started_hdlr(data1);
         if (is_all_gps_client_exit() || is_a_hbd_gps_client_exist()) {
@@ -843,7 +834,6 @@ static void fsm_gps_state_ofl_stopping(mnld_gps_event event, int data1, int data
             (mnld_offload_is_auto_mode() || mnld_offload_is_always_on_mode())) {
                 LOGE("gps_user: %d\n", gps_user);
             } else {
-            	LOGE("GPS_EVENT_OFFLOAD_START: g_mnld_ctx.gps_status.timer_start");
                 start_timer(g_mnld_ctx.gps_status.timer_start, start_time_out);
             }
             gps_control_gps_start(g_mnld_ctx.gps_status.delete_aiding_flag);
@@ -1031,18 +1021,12 @@ static void hal_reboot() {
     hal->need_close_ack = false;
     hal->need_reset_ack = false;
     mnld_fsm(GPS_EVENT_STOP, 0, 0, NULL);
-#ifdef CONFIG_GPS_MT3333
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GPSREBOOT);
-#endif		
 }
 
 static void hal_gps_init() {
     LOGW("hal_gps_init");
     g_mnld_ctx.gps_status.is_gps_init = true;
     mnl2agps_gps_init();
-#ifdef CONFIG_GPS_MT3333
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GPSENABLE);
-#endif
 }
 
 static void hal_gps_start() {
@@ -1053,9 +1037,6 @@ static void hal_gps_start() {
     hal->need_close_ack = false;
     hal_start_gps_trigger_epo_download();
     mnld_fsm(GPS_EVENT_START, 0, 0, NULL);
-#ifdef CONFIG_GPS_MT3333
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GPSSTART);
-#endif		
 }
 
 static void hal_gps_stop() {
@@ -1065,18 +1046,12 @@ static void hal_gps_stop() {
     hal->need_open_ack = false;
     hal->need_close_ack = true;
     mnld_fsm(GPS_EVENT_STOP, 0, 0, NULL);
-#ifdef CONFIG_GPS_MT3333
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GPSSTOP);
-#endif		
 }
 
 static void hal_gps_cleanup() {
     LOGW("hal_gps_cleanup");
     g_mnld_ctx.gps_status.is_gps_init = false;
     mnl2agps_gps_cleanup();
-#ifdef CONFIG_GPS_MT3333
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GPSDISABLE);
-#endif	
 }
 
 static void hal_gps_inject_time(int64_t time, int64_t time_reference, int uncertainty) {
@@ -1090,11 +1065,7 @@ static void hal_gps_inject_time(int64_t time, int64_t time_reference, int uncert
     ntp_inject.timeReference = time_reference;
     ntp_inject.uncertainty = uncertainty;
     if (mnld_is_gps_started_done()) {
-#ifndef CONFIG_GPS_MT3333		
-        mtk_gps_inject_ntp_time((MTK_GPS_NTP_T*)&ntp_inject);	
-#else
-		mt3333_controller_inject_time(time, time_reference, uncertainty);
-#endif
+        mtk_gps_inject_ntp_time((MTK_GPS_NTP_T*)&ntp_inject);
     }
 }
 
@@ -1102,12 +1073,6 @@ static void hal_gps_inject_location(double lat, double lng, float acc) {
     int ret = 0;
     MTK_GPS_NLP_T nlp_inject;
     nlp_context context;
-    bool alt_valid = false;
-    float altitude = 0.0f;
-    bool source_valid = true;
-    bool source_gnss = false;
-    bool source_nlp = true;
-    bool source_sensor = false;
 
     // LOGW("lat=%f lng=%f acc=%f", lat, lng, acc);
     memset(&nlp_inject, 0, sizeof(MTK_GPS_NLP_T));
@@ -1124,13 +1089,9 @@ static void hal_gps_inject_location(double lat, double lng, float acc) {
     nlp_inject.started = mnld_is_gps_started_done();
     nlp_inject.type = 0;
     if (mnld_is_gps_started_done()) {
-#ifndef CONFIG_GPS_MT3333		
         mtk_gps_inject_nlp_location(&nlp_inject);
-#else
-		mt3333_controller_inject_location(lat, lng, acc);
-#endif
     }
-    ret = mnl2agps_location_sync(lat, lng, acc, alt_valid, altitude, source_valid, source_gnss, source_nlp, source_sensor);
+    ret = mnl2agps_location_sync(lat, lng, acc);
     LOGD("ret = %d\n", ret);
     if (0 == ret) {
         LOGD("mnl2agps_location_sync success\n");
@@ -1144,17 +1105,6 @@ static void hal_gps_delete_aiding_data(int flags) {
     hal->need_reset_ack = false;    // HAL no need the ACK
     g_mnld_ctx.gps_status.delete_aiding_flag |= flags;
     mnld_fsm(GPS_EVENT_RESET, 0, 0, NULL);
-#ifdef CONFIG_GPS_MT3333
-	extern int is_ygps_delete_data ;
-	if(g_mnld_ctx.gps_status.gps_state == MNLD_GPS_STATE_IDLE){
-		is_ygps_delete_data = 1;	
-		
-		 if ((flags&GPS_DELETE_RTI) == GPS_DELETE_RTI){
-		 	g_mnld_ctx.gps_status.delete_aiding_flag = 0;
-			is_ygps_delete_data = 0;
-		 }
-	}
-#endif	
 }
 
 static void hal_gps_set_position_mode(gps_pos_mode mode, gps_pos_recurrence recurrence,
@@ -1287,16 +1237,6 @@ static void hal_set_vzw_debug(bool enabled) {
     mnl2agps_vzw_debug_screen_enable(enabled);
 }
 
-extern MNL_CONFIG_T mnl_config;
-static void hal_set_satellite_mode(int mode) {
-    LOGD("hal_set_satellite_mode  mode=%d", mode);
-	mnl_config.GNSSOPMode = mode;
-    mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GNSS_SYSTEM);
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GNSS_SYSTEM);
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GNSS_SYSTEM);
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GNSS_SYSTEM);
-}
-
 static hal2mnl_interface g_hal2mnl_interface = {
     hal_reboot,
     hal_gps_init,
@@ -1321,7 +1261,6 @@ static hal2mnl_interface g_hal2mnl_interface = {
     hal_set_gps_measurement,
     hal_set_gps_navigation,
     hal_set_vzw_debug,
-    hal_set_satellite_mode,
 };
 
 /*****************************************
@@ -2195,18 +2134,13 @@ static int main_event_hdlr(int fd) {
     case GPS2MAIN_EVENT_UPDATE_LOCATION: {
         gps_location location;
         get_binary(buff, &offset, (char*)&location);
-        bool alt_valid = (location.flags & MTK_GPS_LOCATION_HAS_ALT)? true : false;
-        bool source_valid = true;
-        bool source_gnss = true;
-        bool source_nlp = false;
-        bool source_sensor = false;
         float valid_acc = (location.flags & MTK_GPS_LOCATION_HAS_ACCURACY)? location.accuracy : 2000;
         if (mtk_gps_log_is_hide() == 0) {
             LOGW("GPS2MAIN_EVENT_UPDATE_LOCATION  lat=%f lng=%f acc=%f",
                 location.lat, location.lng, valid_acc);
         }
         LOGD("wait_first_location=%d\n", g_mnld_ctx.gps_status.wait_first_location);
-        mnl2agps_location_sync(location.lat, location.lng, (int)valid_acc, alt_valid, (float)location.alt, source_valid, source_gnss, source_nlp, source_sensor);
+        mnl2agps_location_sync(location.lat, location.lng, (int)valid_acc);
         if (g_mnld_ctx.gps_status.wait_first_location) {
             g_mnld_ctx.gps_status.wait_first_location = false;
             g_mnld_ctx.gps_status.gps_ttff = get_tick() - g_mnld_ctx.gps_status.gps_start_time;
@@ -2292,7 +2226,7 @@ static void mnld_main_thread_timeout() {
 static void mnld_gps_start_timeout() {
     if (mnld_timeout_ne_enabled() == false) {
         LOGE("mnld_gps_start_timeout() dump and exit.");
-        //mnld_block_exit();
+        mnld_block_exit();
     } else {
         LOGE("mnld_gps_start_timeout() crash here for debugging");
         CRASH_TO_DEBUG();
@@ -2361,9 +2295,7 @@ static void* mnld_main_thread(void *arg) {
         return 0;
     }
 #ifdef MTK_AGPS_SUPPORT
-#ifndef CONFIG_GPS_MT3333
     int fd_agps = g_mnld_ctx.fds.fd_agps;
-#endif
 #endif
     int fd_hal = g_mnld_ctx.fds.fd_hal;
     int fd_flp = g_mnld_ctx.fds.fd_flp;
@@ -2374,12 +2306,10 @@ static void* mnld_main_thread(void *arg) {
     int fd_mtklogger = g_mnld_ctx.fds.fd_mtklogger;
     int fd_mtklogger_client = g_mnld_ctx.fds.fd_mtklogger_client = -1;
 #ifdef MTK_AGPS_SUPPORT
-#ifndef CONFIG_GPS_MT3333
     if (epoll_add_fd(epfd, fd_agps) == -1) {
         LOGE("mnld_main_thread() epoll_add_fd() failed for fd_agps failed");
         return 0;
     }
-#endif	
 #endif
     if (epoll_add_fd(epfd, fd_hal) == -1) {
         LOGE("mnld_main_thread() epoll_add_fd() failed for fd_hal failed");
@@ -2434,14 +2364,12 @@ static void* mnld_main_thread(void *arg) {
         start_timer(hdlr_timer, MNLD_MAIN_HANDLER_TIMEOUT);
         for (i = 0; i < n; i++) {
         #ifdef MTK_AGPS_SUPPORT
-		#ifndef CONFIG_GPS_MT3333
             if (events[i].data.fd == fd_agps) {
                 if (events[i].events & EPOLLIN) {
                     //LOGD("agps2mnl_hdlr msg");
                     agps2mnl_hdlr(fd_agps, &g_agps2mnl_interface);
                 }
             } else
-		#endif
         #endif
             if (events[i].data.fd == fd_hal) {
                 if (events[i].events & EPOLLIN) {
@@ -2523,13 +2451,11 @@ static int mnld_init() {
 
     // init fds
 #ifdef MTK_AGPS_SUPPORT
-#ifndef CONFIG_GPS_MT3333
     g_mnld_ctx.fds.fd_agps = create_agps2mnl_fd();
     if (g_mnld_ctx.fds.fd_agps < 0) {
         LOGE("create_agps2mnl_fd() failed");
         return -1;
     }
-#endif
 #else
     g_mnld_ctx.fds.fd_agps = 0;
 #endif
@@ -2610,9 +2536,7 @@ static int mnld_init() {
 
     // send the reboot message to the related modules
     mnl2hal_mnld_reboot();
-#ifndef CONFIG_GPS_MT3333
     mnl2agps_mnl_reboot();
-#endif
     mnl2flp_mnld_reboot();
     return 0;
 }
@@ -2663,11 +2587,7 @@ bool mnld_is_epo_download_finished() {
 }
 
 int main(int argc, char** argv) {
-#ifdef CONFIG_GPS_MT3333
-    LOGE("mnld version=2017/08/05 19:39");
-#else
     LOGD("mnld version=0.03, offload ver=%s\n", OFL_VER);
-#endif
     memset(&g_mnld_ctx, 0, sizeof(g_mnld_ctx));
     if (mnl_init()) {
         LOGE("mnl_init: %d (%s)\n", errno, strerror(errno));
@@ -2689,12 +2609,6 @@ int main(int argc, char** argv) {
     /*get gps_epo_type end*/
     mnld_offload_check_capability();
     flp_mnl_emi_download();
-#ifdef CONFIG_GPS_MT3333
-	mt3333_controller_init();
-	msleep(200);
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_NMEA_ONOFF);
-	mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GNSS_SYSTEM);
-#endif
     if (!strncmp(argv[2], "meta", 4) || !strncmp(argv[2], "factory", 4)
         || !strncmp(argv[0], "test", 4) || !strncmp(argv[2], "PDNTest", 7)) {
         mnld_factory_test_entry(argc, argv);
@@ -2714,9 +2628,6 @@ int main(int argc, char** argv) {
         mnld_dump_exit();
 #endif
     }
-#ifdef CONFIG_GPS_MT3333
-    LOGE("mnld version=2017/06/25 17:27 end");
-#endif	
 /*
     LOGD("sizeof(mnld_context)=%d", sizeof(mnld_context));  // 48
     LOGD("sizeof(gps_location)=%d", sizeof(gps_location));  // 56

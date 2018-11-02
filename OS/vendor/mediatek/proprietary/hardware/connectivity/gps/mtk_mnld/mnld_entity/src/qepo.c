@@ -22,9 +22,6 @@
 #include "curl.h"
 #include "easy.h"
 #include "gps_controller.h"
-#ifdef CONFIG_GPS_MT3333
-#include "mt3333_controller.h"
-#endif
 
 #ifdef LOGD
 #undef LOGD
@@ -82,9 +79,6 @@ bool qepo_update_flag = false;
 int qepo_dl_res = EPO_DOWNLOAD_RESULT_FAIL;
 bool qepo_BD_update_flag = false;
 int qepo_bd_dl_res = EPO_DOWNLOAD_RESULT_FAIL;
-#ifdef CONFIG_GPS_MT3333
-extern MNL_CONFIG_T mnl_config;
-#endif
 /////////////////////////////////////////////////////////////////////////////////
 // static functions
 
@@ -94,7 +88,6 @@ static int Qepo_res = 0;
 static int Qepo_bd_res = 0;
 static int counter = 1;
 
-#ifndef CONFIG_GPS_MT3333
 static CURLcode curl_easy_download_quarter_epo(void) {
     int res_val;
     CURLcode res;
@@ -117,28 +110,6 @@ static CURLcode curl_easy_download_quarter_epo(void) {
     }
     return res;
 }
-#else
-static CURLcode curl_easy_download_quarter_epo(void) {
-    int res_val;
-    CURLcode res;
-    char url[256]={0};
-
-    LOGD("curl_easy_download_quarter_epo");
-    __getEpoUrl(quarter_epo_file_name, url);
-    res = curl_easy_download(url, QUARTER_FILE_HAL);
-    LOGD("qepo file curl_easy_download res = %d\n", res);
-    Qepo_res = res;
-    if (res == 0) {
-        counter = 1;
-        res_val = chmod(QUARTER_FILE_HAL, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH);
-        // LOGD("chmod res_val = %d, %s\n", res_val, strerror(errno));
-    } else {
-        counter++;
-    }
-    return res;
-}
-
-#endif
 
 static CURLcode curl_easy_download_quarter_epo_bd(void) {
     int res_val;
@@ -728,7 +699,6 @@ static int qepo_bd_file_update_impl() {
     return qepo_bd_valid;
 }
 
-#ifndef CONFIG_GPS_MT3333
 void qepo_update_quarter_epo_file(int qepo_valid) {
     int qdownload_status = MTK_QEPO_RSP_DOWNLOAD_FAIL;
     int ret = MTK_QEPO_RSP_UPDATE_FAIL;
@@ -754,13 +724,6 @@ void qepo_update_quarter_epo_file(int qepo_valid) {
             LOGE("GPS QEPO update fail\n");
         }
 }
-#else
-void qepo_update_quarter_epo_file(int qepo_valid) {
-    if (qepo_valid == EPO_DOWNLOAD_RESULT_SUCCESS && (mnl_config.EPO_enabled == 1)) {
-        mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_REQUESTQEPO);
-    }
-}
-#endif
 
 void qepo_update_quarter_epo_bd_file(int qepo_bd_valid) {
     int qdownload_bd_status = MTK_QEPO_RSP_DOWNLOAD_FAIL;

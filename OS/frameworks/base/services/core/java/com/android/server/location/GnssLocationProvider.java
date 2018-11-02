@@ -2758,7 +2758,6 @@ public class GnssLocationProvider implements LocationProviderInterface {
     //mtk add start
     /// MTK: Vzw debug screen native API
     private static native void native_set_vzw_debug_screen(boolean enabled);
-	private static native void native_set_satellite_mode(int mode);
 
     private static final String VZW_DEBUG_MSG = "com.mediatek.location.debug_message";
     private static final int GPS_DELETE_HOT_STILL = 0x2000;
@@ -2803,11 +2802,6 @@ public class GnssLocationProvider implements LocationProviderInterface {
                 setVzwDebugScreen(eanbled);
                 result = true;
             }
-			else if("set_satellite_mode".equals(command)) {
-                int mode = (extras != null) ? extras.getInt("mode") : 0;
-                setRealSatelliteMode(mode);
-                result = true;
-			}
         }
         return result;
     }
@@ -2846,9 +2840,4 @@ public class GnssLocationProvider implements LocationProviderInterface {
         mtkReportDebugMessage(vzw_msg);
     }
     /// MTK add end
-
-	public void setRealSatelliteMode(int mode) {
-        if (DEBUG) Log.d(TAG, "setRealSatelliteMode mode=" + mode);
-        native_set_satellite_mode(mode);
-    }
 }

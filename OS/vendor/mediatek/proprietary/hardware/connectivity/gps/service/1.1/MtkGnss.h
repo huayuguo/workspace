@@ -36,7 +36,6 @@
 #include <hidl/Status.h>
 
 #include <VzwDebug.h>
-#include <SatelliteMode.h>
 #include <semaphore.h>
 
 namespace vendor {
@@ -51,7 +50,6 @@ using namespace android::hardware::gnss::V1_0;
 using namespace android::hardware::gnss::V1_0::implementation;
 using ::vendor::mediatek::hardware::gnss::V1_1::IMtkGnss;
 using ::vendor::mediatek::hardware::gnss::V1_1::IVzwDebug;
-using ::vendor::mediatek::hardware::gnss::V1_1::ISatelliteMode;
 using ::android::wp;
 /// Mtk add end
 using ::android::hardware::hidl_death_recipient;
@@ -104,7 +102,6 @@ class MtkGnss : public IMtkGnss {
     Return<sp<IGnssBatching>> getExtensionGnssBatching() override;
     ///M: add to get and wrap hal vzw debug interface
     Return<sp<IVzwDebug>> getExtensionVzwDebug() override;
-	Return<sp<ISatelliteMode>> getExtensionSatelliteMode() override;
 
     /*
      * Callback methods to be passed into the conventional GNSS HAL by the default
@@ -184,7 +181,6 @@ class MtkGnss : public IMtkGnss {
 
     ///M: add for vzw debug hidl imlementation instance
     sp<VzwDebug> mVzwDebug = nullptr;
-	sp<SatelliteMode> mSatelliteMode = nullptr;	
     static sem_t sSem;
 
     sp<GnssHidlDeathRecipient> mDeathRecipient;

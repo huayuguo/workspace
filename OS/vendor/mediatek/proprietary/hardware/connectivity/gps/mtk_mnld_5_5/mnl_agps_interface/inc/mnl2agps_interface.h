@@ -70,7 +70,7 @@ int mnl2agps_revoke_certificates(const char* data, int len);
 int mnl2agps_pmtk(const char* pmtk);
 int mnl2agps_raw_dbg(int enabled);
 int mnl2agps_reaiding_req();
-int mnl2agps_location_sync(double lat, double lng, int acc, bool alt_valid, float alt, bool source_valid, bool source_gnss, bool source_nlp, bool source_sensor);
+int mnl2agps_location_sync(double lat, double lng, int acc);
 int mnl2agps_agps_settings_ack(mnl_agps_gnss_settings* settings);
 int mnl2agps_vzw_debug_screen_enable(int enabled);
 int mnl2agps_set_server_extension(int type, const char* hostname, int port, int ssl, int ssl_version, int ssl_type);

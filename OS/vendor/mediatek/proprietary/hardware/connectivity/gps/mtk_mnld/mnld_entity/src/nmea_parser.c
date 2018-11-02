@@ -49,11 +49,6 @@
 #include "nmea_parser.h"
 #include "mtk_lbs_utility.h"
 #include "mnl_at_interface.h"
-#ifdef CONFIG_GPS_MT3333
-#include "mt3333_controller.h"
-#endif
-
-#define  NEMA_DEBUG 1
 
 #ifdef LOGD
 #undef LOGD
@@ -86,13 +81,6 @@ extern int prn[32];
 extern int snr[32];
 extern int MNL_AT_TEST_FLAG;
 extern int MNL_AT_SIGNAL_MODE;
-
-#ifdef CONFIG_GPS_MT3333
-extern MNL_CONFIG_T mnl_config;
-extern int is_ygps_delete_data ;
-extern unsigned int assist_data_bit_map;
-#endif
-
 /******************************************************************************
  * Functions
 ******************************************************************************/
@@ -416,12 +404,6 @@ static int nmea_reader_update_sv_status(NmeaReader* r, int sv_index,
     }
 
     r->sv_count++;
-	#if NEMA_DEBUG
-	LOGD("sv_status(%2d): %2d, %d, %2f, %3f, %2f, %d",
-        sv_index, r->sv_status.sv_list[sv_index].svid, r->sv_status.sv_list[sv_index].constellation,
-        r->sv_status.sv_list[sv_index].elevation, r->sv_status.sv_list[sv_index].azimuth,
-        r->sv_status.sv_list[sv_index].c_n0_dbhz, r->sv_status.sv_list[sv_index].flags);
-	#endif
     /*
     #ifdef CONFIG_GPS_ENG_LOAD
     LOGD("sv_status(%2d): %2d, %d, %2f, %3f, %2f, %d",
@@ -480,90 +462,12 @@ static void nmea_reader_parse(NmeaReader* const r) {
         sv_type = GLONASS_SV;
     } else if (!memcmp(mtok.p, "GA", 2)) {
         sv_type = GALILEO_SV;
-    } 
-#ifdef CONFIG_GPS_MT3333
-	else if (!memcmp(mtok.p, "PMTK010", 7)) {
-		Token  result          = nmea_tokenizer_get(tzer, 1);
-		int pmtk010_result = str2int(result.p, result.end);
-		
-		LOGD("[GNSS_Performance]:pmtk010_result: %d, delete state=%d", pmtk010_result,is_ygps_delete_data);
-
-		if(pmtk010_result == 1){
-			if(is_ygps_delete_data == 1){
-				is_ygps_delete_data = 2;
-				mt3333_controller_delete_aiding_data(assist_data_bit_map);
-				return;
-			}else if(is_ygps_delete_data == 2){
-				is_ygps_delete_data = 0;
-			}else if(is_ygps_delete_data == 10){
-				is_ygps_delete_data = 0;
-			}
-
-			//mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_REQUES1STNMEA);
-			mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GNSS_SYSTEM);
-			mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_GNSS_SYSTEM);
-
-		}else if(pmtk010_result == 2){	
-			if(is_ygps_delete_data != 0){
-				return;
-			}	
-			mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_NMEA_ONOFF);
-			if((mnl_config.EPO_enabled == 1)){
-				
-				mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_REQUESTEPO);	
-			}
-		}
-		return;
     }
-	else if (!memcmp(mtok.p, "PMTK001", 7)) {
-		Token  cmd          = nmea_tokenizer_get(tzer, 1);
-		Token  cmd_result          = nmea_tokenizer_get(tzer, 2);
-		int pmtk001_cmd = str2int(cmd.p, cmd.end);
-		int pmtk001_cmd_result = str2int(cmd_result.p, cmd_result.end);
-		
-		LOGD("[GNSS_Performance]:pmtk001_cmd: PMTK%03d, cmd result=%d", pmtk001_cmd ,pmtk001_cmd_result);
-
-		
-		if(pmtk001_cmd == 314){
-			mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_REQUESTNTP);
-			mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_REQUESTNLP);
-			
-			if(mnl_config.BEE_enabled == 1){
-				mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_ENABLEDEASYMODE);
-			}else{
-				mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_DISABLEDEASYMODE);
-			}
-			
-			if(mnl_config.dbg2file == 1){
-				mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_ENABLEDEBUGLOG);
-			}else{
-				mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_DISABLEDEBUGLOG);
-			}
-		}
-	}
-	if(is_ygps_delete_data != 0){
-		return;
-	}
-#endif	
     #if NEMA_DEBUG
     LOGD("SV type: %d", sv_type);
     #endif
     tok.p += 2;
     if ( !memcmp(tok.p, "GGA", 3) ) {
-#ifdef CONFIG_GPS_MT3333
-		gps_nmea_end_tag = 0;
-	    r->overflow = 0;
-	    r->utc_year = -1;
-	    r->utc_mon  = -1;
-	    r->utc_day  = -1;
-	    r->utc_diff = 0;
-	    r->sv_count = 0;
-	    r->fix_mode = 0;    /*no fix*/
-	    r->cb_status_changed = 0;
-	    memset((void*)&r->sv_status, 0x00, sizeof(r->sv_status));
-		memset((void*)&r->fix, 0x00, sizeof(r->fix));
-	    nmea_reader_update_utc_diff(r);
-#endif
         // GPS fix
         Token  tok_time          = nmea_tokenizer_get(tzer, 1);
         Token  tok_latitude      = nmea_tokenizer_get(tzer, 2);
@@ -717,11 +621,7 @@ static void nmea_reader_parse(NmeaReader* const r) {
         }
     }
     // Add for Accuracy
-    else if (!memcmp(tok.p, "ACCURACY", 8)) {		
-#ifdef CONFIG_GPS_MT3333
-		mt3333_controller_socket_send_cmd(MAIN_MT3333_CONTROLLER_EVENT_ONCEPERSECOND);
-		gps_nmea_end_tag =  1;
-#endif
+    else if (!memcmp(tok.p, "ACCURACY", 8)) {
         if ((r->fix_mode == 3) || (r->fix_mode == 2)) {
             // if(LOC_FIXED(r)) {
             Token  tok_accuracy = nmea_tokenizer_get(tzer, 1);
@@ -762,7 +662,7 @@ static void nmea_reader_parse(NmeaReader* const r) {
         }
         gmtime_r((time_t*) &r->fix.timestamp, &utc);
         p += snprintf(p, end-p, " time=%s", asctime(&utc));
-        LOGW("%s", temp);
+        LOGW(temp);
         #endif
         mnl2hal_location(r->fix);
         mnld_gps_update_location(r->fix);
@@ -774,12 +674,6 @@ static void nmea_reader_parse(NmeaReader* const r) {
     #endif
     if (gps_nmea_end_tag) {
         mnl2hal_gps_sv(r->sv_status);
-#ifdef CONFIG_GPS_MT3333
-		if(mnld_is_gps_meas_enabled()){
-			extern gnss_sv_info cts_sv_data;
-			cts_sv_data = r->sv_status;
-		}
-#endif		
         r->sv_count = r->sv_status.num_svs = 0;
         memset((void*)nmea_cash, 0x00, sizeof(nmea_cash));
     }
@@ -803,13 +697,7 @@ static void nmea_reader_addc(NmeaReader* const r, int  c) {
     if (c == '\n') {
         nmea_reader_parse(r);
         // LOGD("the structure include nmea_cb address is %p\n", r);
-#ifndef CONFIG_GPS_MT3333
         mnl2hal_nmea(r->fix.timestamp, r->in, r->pos);
-#else
-		if(is_ygps_delete_data == 0){
-			mnl2hal_nmea(r->fix.timestamp, r->in, r->pos);
-		}
-#endif
         // LOGD("length: %d, nmea sentence: %s\n", r->pos, r->in);
         r->pos = 0;
         memset(r->in, 0x00, NMEA_MAX_SIZE+1);
@@ -818,22 +706,14 @@ static void nmea_reader_addc(NmeaReader* const r, int  c) {
 
 void mtk_mnl_nmea_parser_process(const char * buffer, UINT32 length) {
     UINT32  nn;
-#ifndef CONFIG_GPS_MT3333	
     NmeaReader  reader[1];
-#else
-	static NmeaReader  reader[1]={0};
-#endif
 
-#ifndef CONFIG_GPS_MT3333
     nmea_reader_init(reader);
     gps_nmea_end_tag = 0;
-#endif
     for (nn = 0; nn < length; nn++) {
-#ifndef CONFIG_GPS_MT3333		
         if (nn == (length-1)) {
             gps_nmea_end_tag = 1;
         }
-#endif
         nmea_reader_addc(reader, buffer[nn]);
     }
 }

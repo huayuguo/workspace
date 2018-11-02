@@ -9,7 +9,7 @@
 ******************************************************************************/
 
 #define MPE_VERSION_HEAD 'M','P','E','_','V','E','R','_'
-#define MPE_MAJOR_VERSION '1','8','0','3','2','0','0','1' // y,y,m,m,d,d,rev,rev
+#define MPE_MAJOR_VERSION '1','8','0','2','1','3','0','1' // y,y,m,m,d,d,rev,rev
 #define MPE_BRANCH_INFO '_','3','.','0','0','_'
 #define MPE_MINER_VERSION '0','0'
 

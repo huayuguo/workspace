@@ -42,7 +42,6 @@ typedef enum {
     HAL2MNL_GPS_MEASUREMENT                 = 601,
     HAL2MNL_GPS_NAVIGATION                  = 602,
     HAL2MNL_VZW_DEBUG                       = 603,
-    HAL2MNL_SATELLITE_MODE                  = 604,
 } hal2mnl_cmd;
 
 typedef int gps_pos_mode;

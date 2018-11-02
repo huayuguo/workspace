@@ -68,7 +68,6 @@ int hal2mnl_set_gps_measurement(bool enabled);
 int hal2mnl_set_gps_navigation(bool enabled);
 
 int hal2mnl_set_vzw_debug(bool enabled);
-int hal2mnl_set_satellite_mode(int mode);
 
 // -1 means failure
 int mnl2hal_hdlr(int fd, mnl2hal_interface* hdlr);

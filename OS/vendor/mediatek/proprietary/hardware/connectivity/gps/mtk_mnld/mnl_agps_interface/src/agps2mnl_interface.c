@@ -655,17 +655,11 @@ void mnl2agps_hdlr(int fd, mnl2agps_interface* agps_interface) {
         break;
     }
     case MNL_AGPS_TYPE_LOCATION_SYNC: {
-        if(agps_interface->location_sync) {
+        if (agps_interface->location_sync) {
             double lat = get_double(buff, &offset);
             double lng = get_double(buff, &offset);
             int acc = get_int(buff, &offset);
-            bool alt_valid = get_byte(buff, &offset);
-            float alt = get_float(buff, &offset);
-            bool source_valid = get_byte(buff, &offset);
-            bool source_gnss = get_byte(buff, &offset);
-            bool source_nlp = get_byte(buff, &offset);
-            bool source_sensor = get_byte(buff, &offset);
-            agps_interface->location_sync(lat, lng, acc, alt_valid, alt, source_valid, source_gnss, source_nlp, source_sensor);
+            agps_interface->location_sync(lat, lng, acc);
         } else {
             LOGE("location_sync is NULL\n");
         }

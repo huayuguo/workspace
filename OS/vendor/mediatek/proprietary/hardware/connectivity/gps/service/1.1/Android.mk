@@ -21,7 +21,6 @@ LOCAL_SRC_FILES := \
     GnssUtils.cpp \
     MtkGnss.cpp \
     VzwDebug.cpp \
-	SatelliteMode.cpp\
 
 LOCAL_C_INCLUDES += $(MTK_PATH_SOURCE)/hardware/connectivity/gps/gps_hal/inc
 

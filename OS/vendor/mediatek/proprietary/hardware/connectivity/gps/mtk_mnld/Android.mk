@@ -57,7 +57,6 @@ LOCAL_C_INCLUDES += \
   $(LOCAL_PATH)/mnl_nlp_interface/inc \
   $(LOCAL_PATH)/mnl_geofence_interface/inc \
   $(LOCAL_PATH)/mnld_entity/inc \
-  $(LOCAL_PATH)/mnld_entity/src/flashdownload \
   $(LOCAL_PATH)/mnl/inc \
   $(LOCAL_PATH)/curl/inc \
   $(MTK_PATH_SOURCE)/external/nvram/libnvram \
@@ -103,18 +102,6 @@ LOCAL_SRC_FILES := \
 	mnl/src/pseudo_mnl.c \
 	utility/src/mtk_mnld_dump.cpp \
 
-ifeq ($(MTK_GPS_CHIP),MTK_GPS_MT3333)
-
-LOCAL_SRC_FILES += \
-	mnld_entity/src/mt3333_controller.c \
-	mnld_entity/src/flashdownload/flashtool.c \
-	mnld_entity/src/flashdownload/brom_base.c \
-	mnld_entity/src/flashdownload/brom_mt3301.c \
-	mnld_entity/src/flashdownload/da_cmd.c \
-	mnld_entity/src/flashdownload/gps_uart.c \
-
-endif
-
 LOCAL_MODULE := mnld
 LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_OWNER := mtk
@@ -137,9 +124,6 @@ LOCAL_CFLAGS += -DCONFIG_GPS_ENG_LOAD
 endif
 ifeq ($(MTK_AGPS_APP), yes)
 LOCAL_CFLAGS += -DMTK_AGPS_SUPPORT
-endif
-ifeq ($(MTK_GPS_CHIP),MTK_GPS_MT3333)
-LOCAL_CFLAGS += -DCONFIG_GPS_MT3333
 endif
 LOCAL_STATIC_LIBRARIES +=  libsupl
 LOCAL_SHARED_LIBRARIES +=  libmnl libgeofence libcurl libcutils libc libm libnvram libcrypto libssl libz liblog libhardware libutils

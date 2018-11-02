@@ -18,6 +18,13 @@ extern "C" {
 #define UNUSED(x) (x)=(x)
 #endif
 
+#define CRASH_TO_DEBUG() \
+{\
+    int* crash = 0;\
+    gps_dbg_log_exit_flush(0);\
+    *crash = 100;\
+}
+
 #define  ANDROID_MNLD_PROP_SUPPORT 1
 #define  MTK_GPS_NVRAM  1
 void tag_log(int type, const char* tag, const char *fmt, ...);
@@ -34,15 +41,6 @@ void tag_log(int type, const char* tag, const char *fmt, ...);
 #define LOGD(...) tag_log(1, "[mnld][Default]", __VA_ARGS__);
 #define LOGW(...) tag_log(1, "[mnld] WARNING: [Default]", __VA_ARGS__);
 #define LOGE(...) tag_log(1, "[mnld] ERR: [Default]", __VA_ARGS__);
-
-#define CRASH_TO_DEBUG() \
-{\
-    int* crash = 0;\
-    LOGE("%s:%d\n",__func__, __LINE__);\
-    gps_dbg_log_exit_flush(0);\
-    *crash = 100;\
-}
-
 
 #define MNLD_STRNCPY(dst,src,size) do{\
                                        strncpy((char *)(dst), (src), (size - 1));\

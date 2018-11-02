@@ -19,9 +19,6 @@ extern "C" {
 #define MNLD_OP01_LOG_WRITER_SOCKET     "mnld_op01_log_write_socket"
 #define MNLD_TO_NLP_UTILS_SOCKET        "mtk_mnld2nlputils"
 #define MNLD_MPE_SOCKET                 "mnld_mpe_socket"
-#ifdef CONFIG_GPS_MT3333
-#define MNLD_MT3333_CONTROLLER_SOCKET     "mnld_mt3333_controller_socket"
-#endif
 
 #define NLP_REQUEST_SRC_MNL             (1 << 0)
 #define NLP_REQUEST_SRC_APM             (1 << 1)

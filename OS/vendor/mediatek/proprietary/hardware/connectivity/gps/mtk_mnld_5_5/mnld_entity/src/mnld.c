@@ -1092,12 +1092,6 @@ static void hal_gps_inject_location(double lat, double lng, float acc) {
     int ret = 0;
     MTK_GPS_NLP_T nlp_inject;
     nlp_context context;
-    bool alt_valid = false;
-    float altitude = 0.0f;
-    bool source_valid = true;
-    bool source_gnss = false;
-    bool source_nlp = true;
-    bool source_sensor = false;
 
     // LOGW("lat=%f lng=%f acc=%f", lat, lng, acc);
     memset(&nlp_inject, 0, sizeof(MTK_GPS_NLP_T));
@@ -1116,7 +1110,7 @@ static void hal_gps_inject_location(double lat, double lng, float acc) {
     if (mnld_is_gps_started_done()) {
         mtk_gps_inject_nlp_location(&nlp_inject);
     }
-    ret = mnl2agps_location_sync(lat, lng, acc, alt_valid, altitude, source_valid, source_gnss, source_nlp, source_sensor);
+    ret = mnl2agps_location_sync(lat, lng, acc);
     LOGD("ret = %d\n", ret);
     if (0 == ret) {
         LOGD("mnl2agps_location_sync success\n");
@@ -2249,18 +2243,13 @@ static int main_event_hdlr(int fd) {
     case GPS2MAIN_EVENT_UPDATE_LOCATION: {
         gps_location location;
         get_binary(buff, &offset, (char*)&location);
-        bool alt_valid = (location.flags & MTK_GPS_LOCATION_HAS_ALT)? true : false;
-        bool source_valid = true;
-        bool source_gnss = true;
-        bool source_nlp = false;
-        bool source_sensor = false;
         float valid_acc = (location.flags & MTK_GPS_LOCATION_HAS_ACCURACY)? location.accuracy : 2000;
         if (mtk_gps_log_is_hide() == 0) {
             LOGW("GPS2MAIN_EVENT_UPDATE_LOCATION  lat=%f lng=%f acc=%f",
                 location.lat, location.lng, valid_acc);
         }
         LOGD("wait_first_location=%d\n", g_mnld_ctx.gps_status.wait_first_location);
-        mnl2agps_location_sync(location.lat, location.lng, (int)valid_acc, alt_valid, (float)location.alt, source_valid, source_gnss, source_nlp, source_sensor);
+        mnl2agps_location_sync(location.lat, location.lng, (int)valid_acc);
         if (g_mnld_ctx.gps_status.wait_first_location) {
             g_mnld_ctx.gps_status.wait_first_location = false;
             g_mnld_ctx.gps_status.gps_ttff = get_tick() - g_mnld_ctx.gps_status.gps_start_time;
