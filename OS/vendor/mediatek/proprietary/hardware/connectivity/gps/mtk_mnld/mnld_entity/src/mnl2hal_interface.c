@@ -527,6 +527,16 @@ int hal2mnl_hdlr(int fd, hal2mnl_interface* hdlr) {
         }
         break;
     }
+	case HAL2MNL_SATELLITE_MODE: {
+        if (hdlr->set_satellite_mode) {
+            int mode = get_int(buff, &offset);
+            hdlr->set_satellite_mode(mode);
+        } else {
+            LOGE("hal2mnl_hdlr() set_satellite_mode is NULL");
+            ret = -1;
+        }
+        break;
+    }
     default: {
         LOGE("hal2mnl_hdlr() unknown cmd=%d", cmd);
         ret = -1;

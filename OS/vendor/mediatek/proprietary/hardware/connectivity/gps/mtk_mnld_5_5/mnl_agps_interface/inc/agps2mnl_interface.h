@@ -36,7 +36,7 @@ typedef struct {
     void (*data_conn_open_ip_type)(const char* apn, int ip_type);
     void (*install_certificates)(int index, int total, const char* data, int len);
     void (*revoke_certificates)(const char* data, int len);
-    void (*location_sync)(double lat, double lng, int acc);
+    void (*location_sync)(double lat, double lng, int acc, bool alt_valid, float alt, bool source_valid, bool source_gnss, bool source_nlp, bool source_sensor);
     void (*agps_settings_ack) (mnl_agps_gnss_settings* settings);
     void (*vzw_debug_screen_enable) (int enabled);
     void (*set_server_extension) (int type, const char* hostname, int port, int ssl, int ssl_version, int ssl_type);

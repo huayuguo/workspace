@@ -211,6 +211,7 @@ extern char chip_id[PROPERTY_VALUE_MAX];
 extern char chip_id[100];
 #endif
 void chip_detector() {
+#ifndef CONFIG_GPS_MT3333
     int get_time = 20;
     int res;
 #if ANDROID_MNLD_PROP_SUPPORT
@@ -234,6 +235,10 @@ void chip_detector() {
         strncpy(chip_id, "0x3332",sizeof(chip_id));
         LOGD("we get MT3332\n");
     }
+#else
+	strcpy(chip_id, "0x3333");
+    LOGD("we get MT3333\n");
+#endif
     return;
 }
 

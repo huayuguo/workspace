@@ -337,6 +337,19 @@ int hal2mnl_set_vzw_debug(bool enabled) {
     return safe_sendto(MTK_HAL2MNL, buff, offset);
 }
 
+int hal2mnl_set_satellite_mode(int mode) {
+    LOGD("hal2mnl_set_satellite_mode, mode = %d\n", mode);
+    char buff[HAL_MNL_BUFF_SIZE] = {0};
+    int offset = 0;
+    put_int(buff, &offset, HAL_MNL_INTERFACE_VERSION);
+
+    put_int(buff, &offset, HAL2MNL_SATELLITE_MODE);
+    put_int(buff, &offset, mode);
+
+    return safe_sendto(MTK_HAL2MNL, buff, offset);
+}
+
+
 // -1 means failure
 int mnl2hal_hdlr(int fd, mnl2hal_interface* hdlr) {
     char buff[HAL_MNL_BUFF_SIZE] = {0};

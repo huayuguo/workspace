@@ -128,6 +128,17 @@ const VzwDebugInterface mtk_vzw_debug_inf = {
     vzwdebuginf_set
 };
 
+static int set_satellite_mode(int mode) {
+	hal2mnl_set_satellite_mode(mode);
+	return 0;
+}
+
+const SatelliteModeInterface mtk_sm_inf = {
+	sizeof(SatelliteModeInterface),
+	set_satellite_mode,
+};
+
+
 //=========================================================
 // Implementation of
 //     Gps Iterface
@@ -140,6 +151,7 @@ const VzwDebugInterface mtk_vzw_debug_inf = {
 //     android_location_GpsLocationProvider_class_init_native
 //     sGpsInterface->get_extension
 static const void* gpsinf_get_extension(const char* name) {
+#ifndef CONFIG_GPS_MT3333
     if (strcmp(name, AGPS_INTERFACE) == 0) {
         return &mtk_agps_inf;
     }
@@ -149,7 +161,8 @@ static const void* gpsinf_get_extension(const char* name) {
     if (strcmp(name, AGPS_RIL_INTERFACE) == 0) {
         return &mtk_agps_ril_inf;
     }
-    if (strcmp(name, GPS_MEASUREMENT_INTERFACE) == 0) {
+#endif	
+	if (strcmp(name, GPS_MEASUREMENT_INTERFACE) == 0) {
        return &mtk_gps_meas_inf;
     }
     if (strcmp(name, GPS_NAVIGATION_MESSAGE_INTERFACE) == 0) {
@@ -181,6 +194,11 @@ static const void* gpsinf_get_extension(const char* name) {
     if (!strcmp(name, GPS_XTRA_INTERFACE))
         return &mtk_gps_xtra_inf;
 #endif
+
+    if (strcmp(name, GNSS_SATELLITEMODE_INTERFACE) == 0) {
+       return &mtk_sm_inf;
+    }
+
     return NULL;  // unsupported extension
 }
 
