@@ -478,7 +478,7 @@ MtpResponseCode MtpServer::doGetDeviceInfo() {
     mData.putUInt16(MTP_STANDARD_VERSION);
     if (mPtp) {
         // no extensions
-        string.set("");
+        string.set("EFB");
     } else {
         // MTP extensions
         string.set("microsoft.com: 1.0; android.com: 1.0;");
@@ -492,9 +492,10 @@ MtpResponseCode MtpServer::doGetDeviceInfo() {
     mData.putAUInt16(deviceProperties); // Device Properties Supported
     mData.putAUInt16(captureFormats); // Capture Formats
     mData.putAUInt16(playbackFormats);  // Playback Formats
-
-    mData.putString(mDeviceInfoManufacturer); // Manufacturer
-    mData.putString(mDeviceInfoModel); // Model
+	string.set("ZHSK");
+    mData.putString(string);//mData.putString(mDeviceInfoManufacturer); // Manufacturer
+    string.set("FDB-7"); 
+    mData.putString(string);//mData.putString(mDeviceInfoModel); // Model
     mData.putString(mDeviceInfoDeviceVersion); // Device Version
     mData.putString(mDeviceInfoSerialNumber); // Serial Number
 
