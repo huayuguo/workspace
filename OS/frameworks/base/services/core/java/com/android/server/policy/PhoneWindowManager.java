@@ -259,6 +259,7 @@ import com.mediatek.server.wm.WmsExt;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -853,10 +854,82 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private static final int MSG_DISPATCH_BACK_KEY_TO_AUTOFILL = 24;
     private static final int MSG_SYSTEM_KEY_PRESS = 25;
     private static final int MSG_HANDLE_ALL_APPS = 26;
+	private static final int MSG_TURN_OFF_LCD = 27;
+	private static final int MSG_TURN_OFF_LCD2 = 28;
 
     private static final int MSG_REQUEST_TRANSIENT_BARS_ARG_STATUS = 0;
     private static final int MSG_REQUEST_TRANSIENT_BARS_ARG_NAVIGATION = 1;
     private static boolean motionState = false;
+	static final int LCD_STATE_ON = 0;
+	static final int LCD_STATE_DIM = 1;
+	static final int LCD_STATE_OFF = 2;
+	static final int LCD_STATE_WAKE = 3;
+	static final int LCD_STATE_IDLE = 4;
+	static final int LCD_DIM_TIME = 3000;
+	private	int lcm_state = LCD_STATE_ON;
+	private int light_dim_time = 0;
+	private int lcd_last_brightness = 0;
+	private int lcd_last_brightness_mode = 0;
+	private long lastNans = 0;
+
+	private void setBrightnessValues(int values)
+	{
+		int val = 0;
+        if (new File("/sys/class/leds/lcd-backlight/brightness").exists()) {
+
+            final String filename = "/sys/class/leds/lcd-backlight/brightness";
+            FileWriter writer = null;
+            try {
+                writer = new FileWriter(filename);
+                writer.write("" + values);
+				writer.flush();
+				Slog.w(TAG, "setBrightnessValues: " + values);
+            } catch (IOException ex) {
+                Slog.w(TAG, "Couldn't write lcd brightness from " + filename + ": " + ex);
+            } catch (NumberFormatException ex) {
+                Slog.w(TAG, "Couldn't write lcd brightness from " + filename + ": " + ex);
+            } finally {
+                if (writer != null) {
+                    try {
+                        writer.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
+	}
+
+	private int readBrightnessValues()
+	{
+		int val = 0;
+        if (new File("/sys/class/leds/lcd-backlight/brightness").exists()) {
+
+            final String filename = "/sys/class/leds/lcd-backlight/brightness";
+            FileReader reader = null;
+            try {
+                reader = new FileReader(filename);
+                char[] buf = new char[15];
+                int n = reader.read(buf);
+                if (n > 1) {
+                    val = Integer.parseInt(new String(buf, 0, n-1));
+					Slog.w(TAG, "readBrightnessValues: " + val);
+                }
+            } catch (IOException ex) {
+                Slog.w(TAG, "Couldn't read lcd brightness from " + filename + ": " + ex);
+            } catch (NumberFormatException ex) {
+                Slog.w(TAG, "Couldn't read lcd brightness from " + filename + ": " + ex);
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
+
+        return val;
+	}
 
     private class PolicyHandler extends Handler {
         @Override
@@ -949,6 +1022,40 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 case MSG_HANDLE_ALL_APPS:
                     launchAllAppsAction();
                     break;
+				case MSG_TURN_OFF_LCD:
+					//turn off lcd
+					if(mPowerManager.isScreenOn()) {
+						Slog.d(TAG, "LCD goto dim");
+						lcm_state = LCD_STATE_DIM;
+						lcd_last_brightness_mode = Settings.System.getIntForUser(
+						        mContext.getContentResolver(),
+						        Settings.System.SCREEN_BRIGHTNESS_MODE,
+						        Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
+						        UserHandle.USER_CURRENT_OR_SELF);
+						if (lcd_last_brightness_mode != 0) {
+						    Settings.System.putIntForUser(mContext.getContentResolver(),
+						            Settings.System.SCREEN_BRIGHTNESS_MODE,
+						            Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
+						            UserHandle.USER_CURRENT_OR_SELF);
+						}
+						lcd_last_brightness = Settings.System.getIntForUser(mContext.getContentResolver(),
+	                        Settings.System.SCREEN_BRIGHTNESS,
+	                        mPowerManager.getDefaultScreenBrightnessSetting(),
+	                        UserHandle.USER_CURRENT_OR_SELF);
+						Slog.d(TAG, "lcd_last_brightness_mode: " + lcd_last_brightness_mode + ", lcd_last_brightness: " + lcd_last_brightness);
+						//mPowerManager.setBacklightBrightness(0);
+						mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager(0);
+						mHandler.removeMessages(MSG_TURN_OFF_LCD2);
+						mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD2, LCD_DIM_TIME);
+					}
+					break;
+				case MSG_TURN_OFF_LCD2:
+					if(mPowerManager.isScreenOn()) {
+						Slog.d(TAG, "LCD turn off");
+						lcm_state = LCD_STATE_OFF;
+						setBrightnessValues(0);
+					}
+					break;
             }
         }
     }
@@ -2409,6 +2516,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
             if (mImmersiveModeConfirmation != null) {
                 mImmersiveModeConfirmation.loadSetting(mCurrentUserId);
+            }
+
+            int lightdim_enable = Settings.System.getIntForUser(resolver,
+				Settings.System.LIGHTDIM_ONOFF, 0, UserHandle.USER_CURRENT);
+            int lightdim_delay = Settings.System.getIntForUser(resolver,
+				Settings.System.LIGHTDIM_SETTING, 0, UserHandle.USER_CURRENT);
+            if(lightdim_enable == 0) {
+                setLightDim(0);
+            } else if(lightdim_enable == 1) {
+                setLightDim(lightdim_delay);
             }
         }
         synchronized (mWindowManagerFuncs.getWindowManagerLock()) {
@@ -6304,14 +6421,34 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
             case KeyEvent.KEYCODE_POWER: {
                 // Any activity on the power button stops the accessibility shortcut
-                cancelPendingAccessibilityShortcutAction();
-                result &= ~ACTION_PASS_TO_USER;
-                isWakeKey = false; // wake-up will be handled separately
-                if (down) {
-                    interceptPowerKeyDown(event, interactive);
-                } else {
-                    interceptPowerKeyUp(event, interactive, canceled);
-                }
+                if(lcm_state == LCD_STATE_OFF) {
+					if (down) {
+	                    //setBrightnessValues(lcd_last_brightness);
+						//mPowerManager.setBacklightBrightness(lcd_last_brightness);
+						mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager(lcd_last_brightness);
+						if (lcd_last_brightness_mode != 0) {
+							Settings.System.putIntForUser(mContext.getContentResolver(),
+									Settings.System.SCREEN_BRIGHTNESS_MODE,
+									Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC,
+									UserHandle.USER_CURRENT_OR_SELF);
+						}
+						mHandler.removeMessages(MSG_TURN_OFF_LCD);
+						mHandler.removeMessages(MSG_TURN_OFF_LCD2);
+						mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
+	                } else {
+	                    lcm_state = LCD_STATE_ON;
+	                }
+					Slog.d(TAG, "Power Key Down: LCD turn on");
+				} else {
+	                cancelPendingAccessibilityShortcutAction();
+	                result &= ~ACTION_PASS_TO_USER;
+	                isWakeKey = false; // wake-up will be handled separately
+	                if (down) {
+	                    interceptPowerKeyDown(event, interactive);
+	                } else {
+	                    interceptPowerKeyUp(event, interactive, canceled);
+	                }
+				}
                 break;
             }
 
@@ -6534,10 +6671,73 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         return true;
     }
 
+	public int setLightDim(int time) {
+		Slog.d(TAG, "PhoneWindowManager: setLightDim, time = " + time);
+		lcm_state = LCD_STATE_IDLE;
+		light_dim_time = time;
+		mHandler.removeMessages(MSG_TURN_OFF_LCD);
+		mHandler.removeMessages(MSG_TURN_OFF_LCD2);
+		if(light_dim_time > 0) {
+			lcm_state = LCD_STATE_ON;
+			light_dim_time = light_dim_time > LCD_DIM_TIME ? light_dim_time - LCD_DIM_TIME : 1000;
+			mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
+		}
+		return 0;
+	}
 
     /** {@inheritDoc} */
     @Override
     public int interceptMotionBeforeQueueingNonInteractive(long whenNanos, int policyFlags) {
+		if(lcm_state == LCD_STATE_ON) {
+			if(whenNanos - lastNans > 1000000) {
+				mHandler.removeMessages(MSG_TURN_OFF_LCD);
+				mHandler.removeMessages(MSG_TURN_OFF_LCD2);
+				mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
+				lastNans = whenNanos;
+			}
+		} else if(lcm_state == LCD_STATE_DIM) {
+			lastNans = whenNanos;
+			lcm_state = LCD_STATE_ON;
+			//mPowerManager.setBacklightBrightness(lcd_last_brightness);
+			mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager(lcd_last_brightness);
+			if (lcd_last_brightness_mode != 0) {
+				Settings.System.putIntForUser(mContext.getContentResolver(),
+						Settings.System.SCREEN_BRIGHTNESS_MODE,
+						Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC,
+						UserHandle.USER_CURRENT_OR_SELF);
+			}
+			mHandler.removeMessages(MSG_TURN_OFF_LCD);
+			mHandler.removeMessages(MSG_TURN_OFF_LCD2);
+			mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
+			Slog.d(TAG, "LCD break dim");
+		} else if(lcm_state == LCD_STATE_OFF) {
+			lastNans = whenNanos;
+			lcm_state = LCD_STATE_WAKE;
+			//mPowerManager.setBacklightBrightness(lcd_last_brightness);
+			mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager(lcd_last_brightness);
+			if (lcd_last_brightness_mode != 0) {
+				Settings.System.putIntForUser(mContext.getContentResolver(),
+						Settings.System.SCREEN_BRIGHTNESS_MODE,
+						Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC,
+						UserHandle.USER_CURRENT_OR_SELF);
+			}
+			mHandler.removeMessages(MSG_TURN_OFF_LCD);
+			mHandler.removeMessages(MSG_TURN_OFF_LCD2);
+			mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
+			Slog.d(TAG, "LCD wake");
+		} else if (lcm_state == LCD_STATE_WAKE){
+			if(whenNanos - lastNans < 200000) {
+				return FLAG_INJECTED;
+			}
+			lcm_state = LCD_STATE_ON;
+			lastNans = whenNanos;
+		}
+
+
+		if((policyFlags & FLAG_INTERACTIVE) != 0) {
+			return 0;
+		}
+
         if ((policyFlags & FLAG_WAKE) != 0) {
             if (wakeUp(whenNanos / 1000000, mAllowTheaterModeWakeFromMotion,
                     "android.policy:MOTION")) {
@@ -6910,6 +7110,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void screenTurnedOff() {
         if (DEBUG_WAKEUP) Slog.i(TAG, "Screen turned off...");
+		mHandler.removeMessages(MSG_TURN_OFF_LCD);
+		mHandler.removeMessages(MSG_TURN_OFF_LCD2);
+		lcm_state = LCD_STATE_IDLE;
 
         updateScreenOffSleepToken(true);
         synchronized (mLock) {
@@ -6938,6 +7141,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void screenTurningOn(final ScreenOnListener screenOnListener) {
         if (DEBUG_WAKEUP) Slog.i(TAG, "Screen turning on...");
+		mHandler.removeMessages(MSG_TURN_OFF_LCD);
+		mHandler.removeMessages(MSG_TURN_OFF_LCD2);
+		if(light_dim_time > 0) {
+			mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
+			lcm_state = LCD_STATE_ON;
+		}
+		//mContext.getContentResolver().notifyChange(Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS), null);
 
         updateScreenOffSleepToken(false);
         synchronized (mLock) {

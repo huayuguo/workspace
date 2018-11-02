@@ -155,4 +155,14 @@ public final class WindowManagerImpl implements WindowManager {
         }
         return null;
     }
+
+    @Override
+	public int setLightDim(int time) {
+		try {
+			//Slog.d(TAG, "setLightDim, time  = ", time);
+            return WindowManagerGlobal.getWindowManagerService().setLightDim(time);
+        } catch (RemoteException e) {
+        }
+		return 0;
+	}
 }

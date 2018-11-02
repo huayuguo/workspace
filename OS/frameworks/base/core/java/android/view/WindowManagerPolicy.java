@@ -1111,6 +1111,8 @@ public interface WindowManagerPolicy {
      */
     public int interceptMotionBeforeQueueingNonInteractive(long whenNanos, int policyFlags);
 
+	public int setLightDim(int time);
+
     /**
      * Called from the input dispatcher thread before a key is dispatched to a window.
      *

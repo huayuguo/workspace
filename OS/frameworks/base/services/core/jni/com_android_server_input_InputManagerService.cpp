@@ -1038,6 +1038,7 @@ void NativeInputManager::interceptMotionBeforeQueueing(nsecs_t when, uint32_t& p
         policyFlags |= POLICY_FLAG_INTERACTIVE;
     }
     if ((policyFlags & POLICY_FLAG_TRUSTED) && !(policyFlags & POLICY_FLAG_INJECTED)) {
+		#if 0
         if (policyFlags & POLICY_FLAG_INTERACTIVE) {
             policyFlags |= POLICY_FLAG_PASS_TO_USER;
         } else {
@@ -1052,6 +1053,21 @@ void NativeInputManager::interceptMotionBeforeQueueing(nsecs_t when, uint32_t& p
 
             handleInterceptActions(wmActions, when, /*byref*/ policyFlags);
         }
+		#else
+		if (policyFlags & POLICY_FLAG_INTERACTIVE) {
+            policyFlags |= POLICY_FLAG_PASS_TO_USER;
+        }
+        JNIEnv* env = jniEnv();
+        jint wmActions = env->CallIntMethod(mServiceObj,
+                    gServiceClassInfo.interceptMotionBeforeQueueingNonInteractive,
+                    when, policyFlags);
+        if (checkAndClearExceptionFromCallback(env,
+                "interceptMotionBeforeQueueingNonInteractive")) {
+            wmActions = 0;
+        }
+
+        handleInterceptActions(wmActions, when, /*byref*/ policyFlags);
+	#endif
     } else {
         if (interactive) {
             policyFlags |= POLICY_FLAG_PASS_TO_USER;
@@ -1063,6 +1079,9 @@ void NativeInputManager::interceptMotionBeforeQueueing(nsecs_t when, uint32_t& p
 
 void NativeInputManager::handleInterceptActions(jint wmActions, nsecs_t when,
         uint32_t& policyFlags) {
+    if(wmActions & POLICY_FLAG_INJECTED) {
+		policyFlags &= ~POLICY_FLAG_PASS_TO_USER;
+	}
     if (wmActions & WM_ACTION_PASS_TO_USER) {
         policyFlags |= POLICY_FLAG_PASS_TO_USER;
     } else {

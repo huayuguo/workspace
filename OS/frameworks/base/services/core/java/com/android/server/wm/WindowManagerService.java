@@ -6449,6 +6449,13 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
+	@Override
+	public int setLightDim(int time) {
+		Slog.d(TAG, "WindowManagerService: setLightDim, time  = " + time);
+		mPolicy.setLightDim(time);
+		return 0;
+	}
+
     @Override
     public boolean hasNavigationBar() {
         return mPolicy.hasNavigationBar();

@@ -3945,6 +3945,15 @@ public final class Settings {
         /** @hide */
         private static final Validator SHOW_BATTERY_PERCENT_VALIDATOR = sBooleanValidator;
 
+		/** @hide */
+		public static final String LIGHTDIM_ONOFF = "lightdim_onoff";
+		/** @hide */
+        private static final Validator LIGHTDIM_ONOFF_VALIDATOR = sBooleanValidator;
+		/** @hide */
+		public static final String LIGHTDIM_SETTING = "lightdim_setting";
+		/** @hide */
+        private static final Validator LIGHTDIM_SETTING_VALIDATOR = sNonNegativeIntegerValidator;
+
         /**
          * IMPORTANT: If you add a new public settings you also have to add it to
          * PUBLIC_SETTINGS below. If the new setting is hidden you have to add
@@ -4008,7 +4017,9 @@ public final class Settings {
             LOCK_TO_APP_ENABLED,
             NOTIFICATION_SOUND,
             ACCELEROMETER_ROTATION,
-            SHOW_BATTERY_PERCENT
+            SHOW_BATTERY_PERCENT,
+            LIGHTDIM_ONOFF,
+            LIGHTDIM_SETTING
         };
 
         /**
@@ -4071,6 +4082,8 @@ public final class Settings {
             PUBLIC_SETTINGS.add(HAPTIC_FEEDBACK_ENABLED);
             PUBLIC_SETTINGS.add(SHOW_WEB_SUGGESTIONS);
             PUBLIC_SETTINGS.add(VIBRATE_WHEN_RINGING);
+			PUBLIC_SETTINGS.add(LIGHTDIM_ONOFF);
+			PUBLIC_SETTINGS.add(LIGHTDIM_SETTING);
 
             /// M: Add MTK settings to PUBLIC group @{
             putMtkSettingsToSet(className, "putInPublicSettings", Set.class, PUBLIC_SETTINGS);
@@ -4200,6 +4213,8 @@ public final class Settings {
             VALIDATORS.put(WIFI_STATIC_DNS1, WIFI_STATIC_DNS1_VALIDATOR);
             VALIDATORS.put(WIFI_STATIC_DNS2, WIFI_STATIC_DNS2_VALIDATOR);
             VALIDATORS.put(SHOW_BATTERY_PERCENT, SHOW_BATTERY_PERCENT_VALIDATOR);
+			VALIDATORS.put(LIGHTDIM_ONOFF, LIGHTDIM_ONOFF_VALIDATOR);
+			VALIDATORS.put(LIGHTDIM_SETTING, LIGHTDIM_SETTING_VALIDATOR);
         }
 
         /**

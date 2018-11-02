@@ -184,6 +184,8 @@ public interface WindowManager extends ViewManager {
     @RequiresPermission(android.Manifest.permission.RESTRICTED_VR_ACCESS)
     public Region getCurrentImeTouchRegion();
 
+	public int setLightDim(int time);
+
     public static class LayoutParams extends ViewGroup.LayoutParams implements Parcelable {
         /**
          * X position for this window.  With the default gravity it is ignored.

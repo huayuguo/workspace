@@ -397,4 +397,6 @@ interface IWindowManager
      * Return the touch region for the current IME window, or an empty region if there is none.
      */
     Region getCurrentImeTouchRegion();
+	
+    int setLightDim(int time);
 }
