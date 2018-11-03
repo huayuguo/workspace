@@ -1,0 +1,81 @@
+APP：
+getWindow().setAttributes(WindowManager.LayoutParams);
+
+Windows.java:
+public void setAttributes(WindowManager.LayoutParams a) {
+	mWindowAttributes.copyFrom(a);
+	dispatchWindowAttributesChanged(mWindowAttributes);
+}
+
+protected void dispatchWindowAttributesChanged(WindowManager.LayoutParams attrs) {
+	if (mCallback != null) {
+		mCallback.onWindowAttributesChanged(attrs);
+	}
+}
+
+public void setCallback(Callback callback) {
+	mCallback = callback;
+}
+
+Activity.java:
+onWindowAttributesChanged
+	getWindowManager().updateViewLayout(decor, params);
+	
+WindowsManagerGlobal.java:
+	updateViewLayout
+......
+	
+WindowsManager设置亮度过程：
+WindowManagerService.java:
+PowerManagerInternal mPowerManagerInternal;
+mPowerManagerInternal = LocalServices.getService(PowerManagerInternal.class);
+
+RootWindowsContainer.java:
+WindowManagerService mService;
+RootWindowContainer(WindowManagerService service)
+	mService = service;
+
+handleMessage
+	case SET_SCREEN_BRIGHTNESS_OVERRIDE:
+		mService.mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager
+
+performSurfacePlacement
+	mHandler.obtainMessage(SET_SCREEN_BRIGHTNESS_OVERRIDE, brightness, 0).sendToTarget();
+		
+
+PowerMannerService.java
+class LocalService extends PowerManagerInternal
+	setScreenBrightnessOverrideFromWindowManager
+		setScreenBrightnessOverrideFromWindowManagerInternal
+			updatePowerStateLocked
+
+updatePowerStateLocked
+	updateDisplayPowerStateLocked
+	        if (!mBootCompleted) {
+                // Keep the brightness steady during boot. This requires the
+                // bootloader brightness and the default brightness to be identical.
+                autoBrightness = false;
+                brightnessSetByUser = false;
+            } else if (mIsVrModeEnabled) {
+                screenBrightness = mScreenBrightnessForVrSetting;
+                autoBrightness = false;
+            } else if (isValidBrightness(mScreenBrightnessOverrideFromWindowManager)) {	//WidowsManager设置亮度
+                screenBrightness = mScreenBrightnessOverrideFromWindowManager;
+                autoBrightness = false;
+                brightnessSetByUser = false;
+            } else if (isValidBrightness(mTemporaryScreenBrightnessSettingOverride)) {
+                screenBrightness = mTemporaryScreenBrightnessSettingOverride;
+            } else if (isValidBrightness(mScreenBrightnessSetting)) {
+                screenBrightness = mScreenBrightnessSetting;
+            }
+            if (autoBrightness) {
+                screenBrightness = mScreenBrightnessSettingDefault;
+                if (isValidAutoBrightnessAdjustment(
+                        mTemporaryScreenAutoBrightnessAdjustmentSettingOverride)) {
+                    screenAutoBrightnessAdjustment =
+                            mTemporaryScreenAutoBrightnessAdjustmentSettingOverride;
+                } else if (isValidAutoBrightnessAdjustment(
+                        mScreenAutoBrightnessAdjustmentSetting)) {
+                    screenAutoBrightnessAdjustment = mScreenAutoBrightnessAdjustmentSetting;
+                }
+            }

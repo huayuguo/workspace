@@ -1,0 +1,55 @@
+com_android_server_input_InputManagerService.cpp:
+interceptMotionBeforeQueueing
+	jint wmActions = env->CallIntMethod(mServiceObj,
+			gServiceClassInfo.interceptMotionBeforeQueueingNonInteractive,
+			when, policyFlags);
+
+InputManagerService.java:
+private WindowManagerCallbacks mWindowManagerCallbacks;
+public void setWindowManagerCallbacks(WindowManagerCallbacks callbacks) {
+	mWindowManagerCallbacks = callbacks;
+}
+
+interceptMotionBeforeQueueingNonInteractive
+	mWindowManagerCallbacks.interceptMotionBeforeQueueingNonInteractive(
+					whenNanos, policyFlags);
+
+SystemServer.java:
+InputManagerService inputManager = null;
+inputManager = new InputManagerService(context);
+wm = WindowManagerService.main(context, inputManager,
+                    mFactoryTestMode != FactoryTest.FACTORY_TEST_LOW_LEVEL,
+                    !mFirstBoot, mOnlyCore);
+ServiceManager.addService(Context.WINDOW_SERVICE, wm);
+ServiceManager.addService(Context.INPUT_SERVICE, inputManager);
+
+inputManager.setWindowManagerCallbacks(wm.getInputMonitor());
+
+WindowManagerService.java:
+final WindowManagerPolicy mPolicy = MtkPhoneWindowUtility.makeNewWindowManager();
+final InputMonitor mInputMonitor = new InputMonitor(this);
+public InputMonitor getInputMonitor() {
+	return mInputMonitor;
+}
+
+InputMonitor.java:
+final class InputMonitor implements InputManagerService.WindowManagerCallbacks
+	private final WindowManagerService mService;	
+    public int interceptMotionBeforeQueueingNonInteractive(long whenNanos, int policyFlags) {
+        return mService.mPolicy.interceptMotionBeforeQueueingNonInteractive(
+                whenNanos, policyFlags);
+    }
+
+MtkPhoneWindowUtility.java:
+public static WindowManagerPolicy makeNewWindowManager() {
+	if (MultiWindowProxy.isSupported()) {
+		return new MtkPhoneWindowManager();
+	} else {
+		return new PhoneWindowManager();
+	}
+}
+
+PhoneWindowManager.java:
+public int interceptMotionBeforeQueueingNonInteractive(long whenNanos, int policyFlags) {
+	...
+}

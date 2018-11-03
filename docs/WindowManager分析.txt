@@ -1,0 +1,34 @@
+WindowManagerGlobal.java:
+public static void initialize() {
+	getWindowManagerService();
+}
+	
+IWindowManager getWindowManagerService() 
+	sWindowManagerService = IWindowManager.Stub.asInterface(
+						ServiceManager.getService("window"));
+
+    public static WindowManagerGlobal getInstance() {
+        synchronized (WindowManagerGlobal.class) {
+            if (sDefaultWindowManager == null) {
+                sDefaultWindowManager = new WindowManagerGlobal();
+            }
+            return sDefaultWindowManager;
+        }
+    }
+	
+Activity.java:
+mWindowManager = mWindow.getWindowManager();
+getWindowManager
+	return mWindowManager;
+
+SystemServiceRegistry.java:
+	registerService(Context.WINDOW_SERVICE, WindowManager.class,
+				new CachedServiceFetcher<WindowManager>() {
+			@Override
+			public WindowManager createService(ContextImpl ctx) {
+				return new WindowManagerImpl(ctx.getDisplay());
+			}});
+
+
+WindowManagerImpl.java
+	private final WindowManagerGlobal mGlobal = WindowManagerGlobal.getInstance();
