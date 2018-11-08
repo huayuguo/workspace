@@ -1,0 +1,367 @@
+Binder C++ 部分分析：
+前提：
+1、在binder框架中有且只有一个ServiceManager，通过C语言实现（service_manager.c）。
+2、在C++中将binder分成远程接口和本地接口。远程接口对应client，本地接口对应service。
+3、ServiceManager可以看做一个handle固定为0特殊的service，只需要实现远程接口。
+
+一、获取ServiceManager远程接口过程：
+IServiceManager.cpp
+sp<IServiceManager> defaultServiceManager()
+{
+    if (gDefaultServiceManager != NULL) return gDefaultServiceManager;
+    {
+        AutoMutex _l(gDefaultServiceManagerLock);
+        while (gDefaultServiceManager == NULL) {
+            gDefaultServiceManager = interface_cast<IServiceManager>(
+                ProcessState::self()->getContextObject(NULL));
+            if (gDefaultServiceManager == NULL)
+                sleep(1);
+        }
+    }
+    return gDefaultServiceManager;
+}
+
+interface_cast函数用于实例化远程接口类：
+template<typename INTERFACE>
+inline sp<INTERFACE> interface_cast(const sp<IBinder>& obj)
+{
+    return INTERFACE::asInterface(obj);
+}
+
+最终会调用I##INTERFACE类的成员函数asInterface，Binder的接口类都需要继承IInterface接口，并使用下面的两个宏实现asInterface方法：
+IInterface.h:
+#define DECLARE_META_INTERFACE(INTERFACE)                               \
+    static const ::android::String16 descriptor;                        \
+    static ::android::sp<I##INTERFACE> asInterface(                     \
+            const ::android::sp<::android::IBinder>& obj);              \
+    virtual const ::android::String16& getInterfaceDescriptor() const;  \
+    I##INTERFACE();                                                     \
+    virtual ~I##INTERFACE();                                            \
+
+
+#define IMPLEMENT_META_INTERFACE(INTERFACE, NAME)                       \
+    const ::android::String16 I##INTERFACE::descriptor(NAME);           \
+    const ::android::String16&                                          \
+            I##INTERFACE::getInterfaceDescriptor() const {              \
+        return I##INTERFACE::descriptor;                                \
+    }                                                                   \
+    ::android::sp<I##INTERFACE> I##INTERFACE::asInterface(              \
+            const ::android::sp<::android::IBinder>& obj)               \
+    {                                                                   \
+        ::android::sp<I##INTERFACE> intr;                               \
+        if (obj != NULL) {                                              \
+            intr = static_cast<I##INTERFACE*>(                          \
+                obj->queryLocalInterface(                               \
+                        I##INTERFACE::descriptor).get());               \
+            if (intr == NULL) {                                         \
+                intr = new Bp##INTERFACE(obj);                          \
+            }                                                           \
+        }                                                               \
+        return intr;                                                    \
+    }                                                                   \
+    I##INTERFACE::I##INTERFACE() { }                                    \
+    I##INTERFACE::~I##INTERFACE() { }                                   \
+
+ServiceManager中具体实现：
+class IServiceManager : public IInterface
+{
+public:
+    DECLARE_META_INTERFACE(ServiceManager)
+    virtual sp<IBinder>         getService( const String16& name) const = 0;
+    virtual sp<IBinder>         checkService( const String16& name) const = 0;
+    virtual status_t            addService( const String16& name,
+                                            const sp<IBinder>& service,
+                                            bool allowIsolated = false) = 0;
+    virtual Vector<String16>    listServices() = 0;
+    enum {
+        GET_SERVICE_TRANSACTION = IBinder::FIRST_CALL_TRANSACTION,
+        CHECK_SERVICE_TRANSACTION,
+        ADD_SERVICE_TRANSACTION,
+        LIST_SERVICES_TRANSACTION,
+    };
+};
+	
+interface_cast的参数构造过程分析：
+gDefaultServiceManager = interface_cast<IServiceManager>(ProcessState::self()->getContextObject(NULL));	
+ProcessState::self()对应ProcessState的单例，因此只需看getContextObject函数的实现。
+
+ProcessState.cpp：
+sp<IBinder> ProcessState::getContextObject(const sp<IBinder>& /*caller*/)
+{
+    return getStrongProxyForHandle(0);
+}
+
+sp<IBinder> ProcessState::getStrongProxyForHandle(int32_t handle)
+	if (handle == 0) {
+		status_t status = IPCThreadState::self()->transact(0, IBinder::PING_TRANSACTION, data, NULL, 0);	//向ServiceManager发送测试命令:PING_TRANSACTION
+	b = new BpBinder(handle);	//handle传入的参数为0(mHandle = handle)，对应ServiceMannage的handle永远为0
+	e->binder = b;
+	if (b) e->refs = b->getWeakRefs();
+	result = b;
+	return result;
+至此interface_cast的参数构造完成new BpBinder(0)。
+
+下面分析，如果调用ioctl发送PING_TRANSACTION命令。
+IPCThreadState.cpp
+transact(int32_t handle, uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+	writeTransactionData(BC_TRANSACTION, flags, handle, code, data, NULL);	//构造数据保存到mOut
+	waitForResponse(reply);	//写binder驱动
+
+status_t IPCThreadState::waitForResponse(Parcel *reply, status_t *acquireResult)
+	talkWithDriver()
+		ioctl(mProcess->mDriverFD, BINDER_WRITE_READ, &bwr);
+
+前面分析了interface_cast的参数构造过程，下面分析interface_cast怎么构造远程类：
+interface_cast调用asInterface函数：
+asInterface:
+	intr = static_cast<I##INTERFACE*>(obj->queryLocalInterface(I##INTERFACE::descriptor).get());
+	if (intr == NULL) {           
+		intr = new Bp##INTERFACE(obj);
+
+obj是BpBinder类型的实例，在BpBinder类中没有重写queryLocalInterface方法，而父类中返回NULL，则会调用new Bp##INTERFACE(obj)，对应BpServiceManager类，即远程类。
+其原型如下：
+class BpServiceManager : public BpInterface<IServiceManager> {
+    explicit BpServiceManager(const sp<IBinder>& impl)
+        : BpInterface<IServiceManager>(impl)
+    {
+    }
+}
+
+template<typename INTERFACE>
+class BpInterface : public INTERFACE, public BpRefBase
+{
+public:
+    explicit                    BpInterface(const sp<IBinder>& remote);
+protected:
+    virtual IBinder*            onAsBinder();
+};
+
+template<typename INTERFACE>
+inline BpInterface<INTERFACE>::BpInterface(const sp<IBinder>& remote)
+    : BpRefBase(remote)
+{
+}
+
+BpRefBase::BpRefBase(const sp<IBinder>& o)
+    : mRemote(o.get()), mRefs(NULL), mState(0)
+{...}
+
+obj最终会赋值到BpRefBase的mRemote成员（new BpBinder(0)），此成员用于与service通信。
+
+
+二、通过ServiceManager获取Service
+以MediaPlayerService为例：
+IMediaDeathNotifier::getMediaPlayerService()
+{
+    ALOGV("getMediaPlayerService");
+    Mutex::Autolock _l(sServiceLock);
+    if (sMediaPlayerService == 0) {
+        sp<IServiceManager> sm = defaultServiceManager();
+        sp<IBinder> binder;
+        do {
+            binder = sm->getService(String16("media.player"));
+            if (binder != 0) {
+                break;
+            }
+            ALOGW("Media player service not published, waiting...");
+            usleep(500000); // 0.5 s
+        } while (true);
+
+        if (sDeathNotifier == NULL) {
+            sDeathNotifier = new DeathNotifier();
+        }
+        binder->linkToDeath(sDeathNotifier);
+        sMediaPlayerService = interface_cast<IMediaPlayerService>(binder);
+    }
+    ALOGE_IF(sMediaPlayerService == 0, "no media player service!?");
+    return sMediaPlayerService;
+}
+
+virtual sp<IBinder> getService(const String16& name) const
+	sp<IBinder> svc = checkService(name);
+
+virtual sp<IBinder> checkService( const String16& name) const
+{
+	Parcel data, reply;
+	data.writeInterfaceToken(IServiceManager::getInterfaceDescriptor());
+	data.writeString16(name);
+	remote()->transact(CHECK_SERVICE_TRANSACTION, data, &reply);
+	return reply.readStrongBinder();
+}
+
+remote()是父类BpRefBase的成员函数，返回mRemote；
+由上面分析mRemote对应BpBinder对象，对于ServiceManager即BpBinder(0);
+status_t BpBinder::transact(uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+{
+    if (mAlive) {
+        status_t status = IPCThreadState::self()->transact(mHandle, code, data, reply, flags);
+        if (status == DEAD_OBJECT) mAlive = 0;
+        return status;
+    }
+    return DEAD_OBJECT;
+}
+前面分析了transact会调用binder驱动通信，handle为0，则是向ServiceManager发送CHECK_SERVICE_TRANSACTION命令。
+对应ServiceManager会收到SVC_MGR_CHECK_SERVICE命令。ServiceManager查询到name相同的服务后，返回服务的handle给client。
+
+通过handle构建远程类reply.readStrongBinder();
+Parcel.cpp:
+sp<IBinder> Parcel::readStrongBinder() const
+{
+    sp<IBinder> val;
+    // Note that a lot of code in Android reads binders by hand with this
+    // method, and that code has historically been ok with getting nullptr
+    // back (while ignoring error codes).
+    readNullableStrongBinder(&val);
+    return val;
+}
+
+readNullableStrongBinder
+	unflatten_binder
+	
+status_t unflatten_binder(const sp<ProcessState>& proc,
+    const Parcel& in, wp<IBinder>* out)
+{
+    const flat_binder_object* flat = in.readObject(false);
+
+    if (flat) {
+        switch (flat->type) {
+            case BINDER_TYPE_BINDER:
+                *out = reinterpret_cast<IBinder*>(flat->cookie);
+                return finish_unflatten_binder(NULL, *flat, in);
+            case BINDER_TYPE_WEAK_BINDER:
+                if (flat->binder != 0) {
+                    out->set_object_and_refs(
+                        reinterpret_cast<IBinder*>(flat->cookie),
+                        reinterpret_cast<RefBase::weakref_type*>(flat->binder));
+                } else {
+                    *out = NULL;
+                }
+                return finish_unflatten_binder(NULL, *flat, in);
+            case BINDER_TYPE_HANDLE:
+            case BINDER_TYPE_WEAK_HANDLE:
+                *out = proc->getWeakProxyForHandle(flat->handle);
+                return finish_unflatten_binder(
+                    static_cast<BpBinder*>(out->unsafe_get()), *flat, in);
+        }
+    }
+    return BAD_TYPE;
+}
+
+ProcessState.cpp：
+getWeakProxyForHandle
+	b = new BpBinder(handle);
+	result = b;
+	return result;
+
+通过构建BpBinder对象，作为BpServiceManager的getService函数的返回值返回。有了BpBinder作为原料，通过interface_cast函数就能产生远程类的对象。
+sMediaPlayerService = interface_cast<IMediaPlayerService>(binder);
+同ServiceManager，远程类的对象可以remote()-transact(...)访问到service的本地方法。
+IMediaPlayerService.cpp:
+class BpMediaPlayerService: public BpInterface<IMediaPlayerService>
+{
+	...
+    virtual sp<IMediaPlayer> create(
+            const sp<IMediaPlayerClient>& client, audio_session_t audioSessionId) {
+        Parcel data, reply;
+        data.writeInterfaceToken(IMediaPlayerService::getInterfaceDescriptor());
+        data.writeStrongBinder(IInterface::asBinder(client));
+        data.writeInt32(audioSessionId);
+
+        remote()->transact(CREATE, data, &reply);
+        return interface_cast<IMediaPlayer>(reply.readStrongBinder());
+    }
+	...
+}
+
+
+三、通过ServiceManager注册Service
+Service创建过程分两步：注册服务、loop。以MediaPlayerService为例：
+作为service肯定需要运行一个进程：
+main_mediaserver.cpp:
+int main(int argc __unused, char **argv __unused)
+{
+    signal(SIGPIPE, SIG_IGN);
+    sp<ProcessState> proc(ProcessState::self());
+    sp<IServiceManager> sm(defaultServiceManager());
+    ALOGI("ServiceManager: %p", sm.get());
+    InitializeIcuOrDie();
+    MediaPlayerService::instantiate();
+    ResourceManagerService::instantiate();
+    registerExtensions();
+    ProcessState::self()->startThreadPool();
+    IPCThreadState::self()->joinThreadPool();
+}
+
+void MediaPlayerService::instantiate() {
+    defaultServiceManager()->addService(
+            String16("media.player"), new MediaPlayerService());
+}
+
+virtual status_t addService(const String16& name, const sp<IBinder>& service,
+		bool allowIsolated)
+{
+	Parcel data, reply;
+	data.writeInterfaceToken(IServiceManager::getInterfaceDescriptor());
+	data.writeString16(name);
+	data.writeStrongBinder(service);
+	data.writeInt32(allowIsolated ? 1 : 0);
+	status_t err = remote()->transact(ADD_SERVICE_TRANSACTION, data, &reply);
+	return err == NO_ERROR ? reply.readExceptionCode() : err;
+}
+ServiceManager则会收到SVC_MGR_ADD_SERVICE命令，根据name添加对应的service。
+
+service进入loop，等待client发送数据。
+startThreadPool
+	spawnPooledThread
+		sp<Thread> t = new PoolThread(isMain);
+			IPCThreadState::self()->joinThreadPool(mIsMain);
+		t->run(name.string());
+
+joinThreadPool
+	mOut.writeInt32(isMain ? BC_ENTER_LOOPER : BC_REGISTER_LOOPER);
+	getAndExecuteCommand
+		talkWithDriver();
+
+talkWithDriver通过ioctl发送BC_ENTER_LOOPER命令给binder驱动，阻塞当前进程，等待client发送数据。
+当到收到数据executeCommand会被调用：
+executeCommand
+	case BR_TRANSACTION:
+		reinterpret_cast<BBinder*>(tr.cookie)->transact(tr.code, buffer, &reply, tr.flags);
+
+status_t BBinder::transact(uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+{
+	...
+    switch (code) {
+        case PING_TRANSACTION:
+            reply->writeInt32(pingBinder());
+            break;
+        default:
+            err = onTransact(code, data, reply, flags);
+            break;
+    }
+	...
+}
+
+最终BBinder子类的onTransact会被调用：
+status_t BnMediaPlayerService::onTransact(
+    uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+{
+    switch (code) {
+        case CREATE: {
+            CHECK_INTERFACE(IMediaPlayerService, data, reply);
+            sp<IMediaPlayerClient> client =
+                interface_cast<IMediaPlayerClient>(data.readStrongBinder());
+            audio_session_t audioSessionId = (audio_session_t) data.readInt32();
+            sp<IMediaPlayer> player = create(client, audioSessionId);
+            reply->writeStrongBinder(IInterface::asBinder(player));
+            return NO_ERROR;
+        } break;
+		...
+        default:
+            return BBinder::onTransact(code, data, reply, flags);
+	}
+}
+Client发送过来的命令，最终会在onTransact中执行对应的函数，至此完成了client通过binder远程调用service中的函数。
+
+四、总结：
+
