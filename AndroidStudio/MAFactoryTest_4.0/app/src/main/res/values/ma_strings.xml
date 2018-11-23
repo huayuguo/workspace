@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Factory Test</string>
+    
+    <string name="ma_state">(N/A)</string>
+    <string name="ma_test_run">Wait...</string>
+    <string name="ma_test_pass">Success</string>
+    <string name="ma_test_fail">Failed</string>
+    <string name="ma_test_timeout">Timeout, no finger on fingerprint module</string>
+    <string name="ma_test_start">Start</string>
+    <string name="ma_test_restart">Restart</string>
+    <string name="ma_test_cancel">Cancel</string>   
+    <string name="ma_test_ok">OK</string>
+    
+    <string name="ma_open_fail">Open device failed.</string>
+    <string name="ma_spi_title">SPI Test</string>
+    <string name="ma_spi_hint">Test SPI is ok or not</string>
+    <string name="ma_deadpixel_title">DeadPixel Test</string>
+    <string name="ma_deadpixel_hint">Test deadpixel is ok or not</string>
+    <string name="ma_interrupt_title">Interrupt Test</string>
+    <string name="ma_interrupt_hint">Test interrupt is ok or not</string>
+    <string name="ma_press_title">Press Test</string>
+    <string name="ma_press_hint">Test Press is ok or not</string>
+    <string name="ma_press_tip">Press your finger in %1$s seconds</string>
+    <string name="ma_enroll_title">Enroll Test</string>
+    <string name="ma_enroll_hint">Test enroll is ok or not</string>
+    <string name="ma_match_title">Match Test</string>
+    <string name="ma_match_hint">Test match is ok or not</string>
+    
+    <string name="ma_calibrate_title">Calibrate Test</string>
+    <string name="ma_calibrate_hint">Test calibrate is ok or not</string>
+    <string name="ma_calibrate_tip">Do not put finger on fingerprint module or turn off screen</string>
+    <string name="ma_calibrate_dialog_title">Notice</string> 
+    <string name="ma_calibrate_dialog_msg">Going to calibrate, please do not put finger on fingerprint module or turn off screen.</string> 
+
+    <string name="ma_enroll_prepare">Put your finger to fingerprint sensor for enrolling.</string>
+    <string name="ma_identify_prepare">Put the enrolled finger to fingerprint sensor for matching.</string>
+    <string name="ma_identify_success">Identify success</string>
+    <string name="ma_identify_fail">Identify fail</string>
+    <string name="ma_identify_fail_undone">try again!</string>
+    
+ </resources>
