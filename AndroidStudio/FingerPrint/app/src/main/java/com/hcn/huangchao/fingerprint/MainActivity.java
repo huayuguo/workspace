@@ -6,10 +6,12 @@ import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements View.OnClickListener {
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "FingerPrintTest";
     private Button check;
+    private TextView tvState;
     private FingerprintManagerCompat manager;
 
     @Override
@@ -17,9 +19,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        check = (Button) findViewById(R.id.btn_check);
-
+        check = findViewById(R.id.btn_check);
         check.setOnClickListener(this);
+        tvState = findViewById(R.id.tvState);
 
         // 获取一个FingerPrintManagerCompat的实例
         manager = FingerprintManagerCompat.from(this);
@@ -37,23 +39,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
                  * 并重写一些方法，不同的情况回调不同的函数
                  */
                 manager.authenticate(null, 0, null, new MyCallBack(), null);
+                tvState.append("开始验证指纹\n");
                 break;
         }
     }
 
     public class MyCallBack extends FingerprintManagerCompat.AuthenticationCallback {
-        private static final String TAG = "MyCallBack";
-
         // 当出现错误的时候回调此函数，比如多次尝试都失败了的时候，errString是错误信息
         @Override
         public void onAuthenticationError(int errMsgId, CharSequence errString) {
             Log.d(TAG, "onAuthenticationError: " + errString);
+            tvState.append("onAuthenticationError: " + errString + "\n");
         }
 
         // 当指纹验证失败的时候会回调此函数，失败之后允许多次尝试，失败次数过多会停止响应一段时间然后再停止sensor的工作
         @Override
         public void onAuthenticationFailed() {
             Log.d(TAG, "onAuthenticationFailed: " + "验证失败");
+            tvState.append("onAuthenticationFailed: " + "验证失败" + "\n");
         }
 
         @Override
@@ -63,9 +66,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         // 当验证的指纹成功时会回调此函数，然后不再监听指纹sensor
         @Override
-        public void onAuthenticationSucceeded(FingerprintManagerCompat.AuthenticationResult
-                                                      result) {
+        public void onAuthenticationSucceeded(FingerprintManagerCompat.AuthenticationResult result) {
             Log.d(TAG, "onAuthenticationSucceeded: " + "验证成功");
+            tvState.append("onAuthenticationSucceeded: " + "验证成功" + "\n");
         }
     }
 
