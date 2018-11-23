@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:fadeScrollbars="false" >
+
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:orientation="vertical" >
+
+		<TextView
+			android:id="@id/report_success"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="@color/Green"
+			android:textSize="20.0dip" />
+
+		<TextView
+			android:id="@id/report_failed"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="@color/Red"
+			android:textSize="20.0dip" />
+
+		<TextView
+			android:id="@id/report_default"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="@color/gray"
+			android:textSize="20.0dip" />
+	</LinearLayout>
+
+</ScrollView>

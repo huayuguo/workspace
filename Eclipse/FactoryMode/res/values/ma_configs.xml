@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    
+	<!-- 1-6分别对应注解的测试项目，不需要的可以注释掉 -->
+	<integer-array name="test_items"> 
+	    <!-- SPI TEST-->
+	    <item>1</item>
+	    <!-- BADPIX TEST -->
+	    <item>3</item>
+	    <!-- INTERRUPT TEST -->
+	    <item>4</item>
+	    <!-- PRESS TEST -->
+	    <item>5</item>
+	    <!-- ENROLL TEST   -->
+	    <item>6</item>
+	    <!-- MATCH TEST -->
+		<item>7</item>
+	</integer-array>
+	
+	<integer-array name="test_items_120"> 
+	    <!-- SPI TEST-->
+	    <item>1</item>
+	    <!-- CALIBRATE TEST -->
+	    <item>2</item>
+	    <!-- BADPIX TEST -->
+	    <item>3</item>
+	    <!-- INTERRUPT TEST -->
+	    <item>4</item>
+	    <!-- PRESS TEST -->
+	    <item>5</item>
+	    <!-- ENROLL TEST -->
+	    <item>6</item>
+	    <!-- MATCH TEST -->
+	    <item>7</item>
+	</integer-array>
+	
+	<!-- 指定so的完整路径 (so名称不为libfprint-x32, libfprint-x64时)-->
+	<!-- 示例: /system/lib/libfprint-w.so -->
+	<string name="custom_lib"></string>
+	
+	<!-- 注册次数 -->
+	<integer name="enroll_times">6</integer>
+	
+	<!-- 匹配次数 -->
+	<integer name="match_times">3</integer>
+	
+	<!-- 按压测试的超时时间(单位:ms) -->
+	<integer name="press_timeout">5000</integer>
+	
+	<!-- 退出按钮的位置(0:不显示退出按钮，1:显示在标题栏，2:显示在底部) -->
+	<integer name="cancel_position">2</integer>
+	
+	<!-- 是否显示标题栏，标题栏的内容为程式名+版本号 -->
+	<bool name="show_titile">false</bool>
+	
+	<!-- 注册匹配时是否需要振动效果 -->
+	<bool name="enable_vibrator">true</bool>
+
+</resources>

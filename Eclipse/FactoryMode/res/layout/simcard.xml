@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/info_layout" >
+
+    <include layout="@layout/yjzn_header" />
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:id="@id/gemini_sim_container"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" 
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@id/simcard_sim1_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20.0dip" />
+
+            <TextView
+                android:id="@id/simcard_sim2_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20.0dip" />
+        </LinearLayout>
+        
+        <LinearLayout
+            android:id="@id/single_sim_container"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+            <TextView
+                android:id="@id/simcard_sim_info"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20.0dip" >
+                
+            </TextView>
+        </LinearLayout>
+    </FrameLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <include layout="@layout/yjzn_btns" />
+
+</LinearLayout>

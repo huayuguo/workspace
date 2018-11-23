@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:layout_gravity="bottom"
+	android:weightSum="2" >
+
+	<Button
+		android:id="@+id/bt_ok"
+		android:layout_width="0dp"
+		android:layout_weight="1"
+		android:layout_height="fill_parent"
+		android:text="@string/Success"
+		android:textSize="25.0dip" 
+		android:background="@drawable/yjzn_btn_confirm_ok"/>
+	<Button
+		android:id="@+id/bt_failed"
+		android:layout_width="0dp"
+		android:layout_weight="1"
+		android:layout_height="fill_parent"
+		android:text="@string/Failed"
+		
+		android:textSize="25.0dip" 
+		android:background="@drawable/yjzn_btn_confirm_failed"/>
+</LinearLayout>

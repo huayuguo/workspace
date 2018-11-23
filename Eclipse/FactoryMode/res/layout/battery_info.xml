@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout" >
+	<include layout="@layout/yjzn_header"/>
+	<ScrollView
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="2" >
+
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical" >
+
+			<LinearLayout style="@style/entry_layout" >
+
+				<TextView
+					style="@style/info_label"
+					android:text="@string/battery_info_status_label" />
+
+				<TextView
+					android:id="@id/status"
+					style="@style/info_value" />
+			</LinearLayout>
+
+			<LinearLayout style="@style/entry_layout" >
+
+				<TextView
+					style="@style/info_label"
+					android:text="@string/battery_info_level_label" />
+
+				<TextView
+					android:id="@id/level"
+					style="@style/info_value" />
+			</LinearLayout>
+
+			<LinearLayout style="@style/entry_layout" >
+
+				<TextView
+					style="@style/info_label"
+					android:text="@string/battery_info_scale_label" />
+
+				<TextView
+					android:id="@id/scale"
+					style="@style/info_value" />
+			</LinearLayout>
+
+			<LinearLayout style="@style/entry_layout" >
+
+				<TextView
+					style="@style/info_label"
+					android:text="@string/battery_info_health_label" />
+
+				<TextView
+					android:id="@id/health"
+					style="@style/info_value" />
+			</LinearLayout>
+
+			<LinearLayout style="@style/entry_layout" >
+
+				<TextView
+					style="@style/info_label"
+					android:text="@string/battery_info_voltage_label" />
+
+				<TextView
+					android:id="@id/voltage"
+					style="@style/info_value" />
+			</LinearLayout>
+
+			<LinearLayout style="@style/entry_layout" >
+
+				<TextView
+					style="@style/info_label"
+					android:text="@string/battery_info_temperature_label" />
+
+				<TextView
+					android:id="@id/temperature"
+					style="@style/info_value" />
+			</LinearLayout>
+
+			<LinearLayout style="@style/entry_layout" >
+
+				<TextView
+					style="@style/info_label"
+					android:text="@string/battery_info_technology_label" />
+
+				<TextView
+					android:id="@id/technology"
+					style="@style/info_value" />
+			</LinearLayout>
+
+			<LinearLayout style="@style/entry_layout" >
+
+				<TextView
+					style="@style/info_label"
+					android:text="@string/battery_info_uptime" />
+
+				<TextView
+					android:id="@id/uptime"
+					style="@style/info_value" />
+			</LinearLayout>
+		</LinearLayout>
+	</ScrollView>
+
+	<include layout="@layout/yjzn_btns"/>
+
+</LinearLayout>

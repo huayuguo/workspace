@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout">
+	<include layout="@layout/yjzn_header"/>
+	<TextView
+		android:id="@id/comm_info"
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="2"
+		style="@style/info_label"/>
+
+	<include layout="@layout/yjzn_btns"/>
+
+</LinearLayout>

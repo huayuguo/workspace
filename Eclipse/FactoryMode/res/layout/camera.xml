@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout">
+
+	<include layout="@layout/yjzn_header"/>
+	
+	<RelativeLayout
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1" >
+
+		<SurfaceView
+			android:id="@id/camera_view"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:layout_toLeftOf="@id/subcamera_take" />
+	</RelativeLayout>
+
+	<include layout="@layout/yjzn_camera_btns"/>
+</LinearLayout>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout">
+
+	<!--
+	<Button
+		android:id="@id/audio_bt_ok"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_weight="0.8"
+		android:text="@string/Success"
+		android:textSize="25.0dip" />
+
+	<Button
+		android:id="@id/audio_bt_failed"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_weight="0.2"
+		android:text="@string/Failed"
+		android:textSize="25.0dip" />
+	-->
+
+	<include layout="@layout/yjzn_header" />
+	<View android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"/>
+	
+	<include
+		android:layout_height="fill_parent"
+		layout="@layout/yjzn_btns" />
+
+</LinearLayout>

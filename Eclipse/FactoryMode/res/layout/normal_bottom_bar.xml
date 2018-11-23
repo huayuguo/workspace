@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/myButtonBarStyle">
+
+    <Button
+        android:id="@+id/btnPass"
+        style="@style/btnPassStyle">
+    </Button>
+
+    <Button
+        android:id="@+id/btnFail"
+        style="@style/btnFailStyle">
+    </Button>
+
+</LinearLayout>

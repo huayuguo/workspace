@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout">
+	<include layout="@layout/yjzn_header"/>
+    <LinearLayout
+        android:id="@+id/temp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_centerHorizontal="true">
+        <TextView
+            android:id="@+id/title_temp"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:text="@string/temperature"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/content_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:layout_marginLeft="10dp"
+            android:layout_alignTop="@id/title_temp"
+            android:layout_toRightOf="@id/title_temp"
+            android:text="@string/degree_celsius"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/humi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/temp"
+        android:layout_marginTop="24dp"
+        android:layout_centerHorizontal="true">
+        <TextView
+            android:id="@+id/title_humi"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:text="@string/humidity"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/content_humi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:layout_marginLeft="10dp"
+            android:layout_alignTop="@id/title_humi"
+            android:layout_toRightOf="@id/title_humi"
+            android:text="@string/degree_celsius"
+            android:textSize="18sp" />
+    </LinearLayout>
+	<View android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"/>	
+	<include layout="@layout/yjzn_btns"/>
+</LinearLayout>

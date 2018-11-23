@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="TextAppearance" parent="@android:style/TextAppearance.DeviceDefault.Large" >
+    	<item name="android:textSize">20sp</item>
+    </style>
+    <style name="TextAppearance.info_label" parent="@style/TextAppearance">
+     
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.info_small" parent="@style/TextAppearance">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    <style name="TextAppearance.info_value" parent="@style/TextAppearance">
+    	<item name="android:textSize">25sp</item>
+   		<item name="android:textStyle">bold</item>
+    </style>
+    
+
+</resources>

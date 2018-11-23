@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent" >
+	
+	<include layout="@layout/yjzn_header"/>
+	<LinearLayout
+		android:id="@id/LinearLayout"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+	    android:layout_gravity="center_vertical" >
+
+		<Button
+			android:id="@id/Display_lcd_on"
+			android:layout_width="wrap_content"
+			android:layout_height="100.0dip"
+			android:layout_weight="0.5"
+			android:text="@string/LCD_increase" />
+
+		<Button
+			android:id="@id/Display_lcd_off"
+			android:layout_width="wrap_content"
+			android:layout_height="100.0dip"
+			android:layout_weight="0.5"
+			android:text="@string/LCD_weaken" />
+	</LinearLayout>
+
+	<include layout="@layout/yjzn_btns"/>"
+
+</FrameLayout>

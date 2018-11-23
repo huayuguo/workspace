@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout">
+	<include layout="@layout/yjzn_header"/>
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:gravity="center"
+		android:layout_gravity="center"
+		android:orientation="vertical" >
+
+		<TextView
+			android:id="@+id/object_temp"
+			
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/object_temp_text"
+	
+			style="@style/info_label"/>
+
+		<TextView
+			android:id="@+id/ambient_temp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/ambient_temp_text"
+	
+			style="@style/info_label"/>
+
+	</LinearLayout>
+	<include layout="@layout/yjzn_btns"/>
+</LinearLayout>

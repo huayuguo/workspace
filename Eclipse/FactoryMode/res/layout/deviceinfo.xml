@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout" >
+
+	<include layout="@layout/yjzn_header" />
+
+	<ScrollView
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1" >
+
+		<TableLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:divider="#000000"
+			android:stretchColumns="1" >
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp" 
+				android:background="#000000"/>
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/brand" />
+
+				<TextView
+					android:id="@+id/brand_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					 />
+			</TableRow>
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/model" />
+
+				<TextView
+					android:id="@+id/model_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					 />
+			</TableRow>
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/android_version" />
+
+				<TextView
+					android:id="@+id/version_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					/>
+			</TableRow>
+			<TableRow android:visibility="gone">
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/device_serialno" />
+
+				<TextView
+					android:id="@+id/serialno_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					/>
+			</TableRow>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp" 
+				android:background="#000000"/>
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/cpu_model" />
+
+				<TextView
+					android:id="@+id/cpu_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					 />
+			</TableRow>
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/gpu_render" />
+
+				<TextView
+					android:id="@+id/gpu_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					 />
+			</TableRow>
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/resolution" />
+
+				<TextView
+					android:id="@+id/resolution_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					 />
+			</TableRow>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp" 
+				android:background="#000000"/>
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/main_camera" />
+
+				<TextView
+					android:id="@+id/main_camera_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					/>
+			</TableRow>
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/sub_camera" />
+
+				<TextView
+					android:id="@+id/sub_camera_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					 />
+			</TableRow>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="1dp" 
+				android:background="#000000"/>
+
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/ram" />
+
+				<TextView
+					android:id="@+id/ram_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					 />
+			</TableRow>
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/data_storage" />
+
+				<TextView
+					android:id="@+id/data_storage_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					 />
+			</TableRow>
+
+			<TableRow>
+
+				<TextView
+					style="@style/info_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/internal_storage" />
+
+				<TextView
+					android:id="@+id/internal_storage_val"
+					style="@style/info_value"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					/>
+			</TableRow>
+
+			<LinearLayout
+				android:id="@+id/surface_container"
+				android:layout_width="1dp"
+				android:layout_height="1dp"
+				android:orientation="vertical"
+				android:visibility="invisible" />
+		</TableLayout>
+	</ScrollView>
+
+	<include layout="@layout/yjzn_btns" />
+
+</LinearLayout>

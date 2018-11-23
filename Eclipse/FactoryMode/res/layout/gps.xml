@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout" >
+	<include layout="@layout/yjzn_header"/>
+	<ScrollView
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:fadeScrollbars="false"
+		android:visibility="gone" >
+
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:orientation="vertical" 
+			android:gravity="center_vertical"
+			android:layout_gravity="center_vertical">
+
+			<TextView
+				
+				style="@style/TextAppearance.info_label"
+				android:id="@id/gps_state_id"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" />
+
+			<TextView
+				
+				style="@style/TextAppearance.info_label"
+				android:id="@id/gps_satellite_id"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" />
+
+			<TextView
+				
+				style="@style/TextAppearance.info_label"
+				android:id="@id/gps_signal_id"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" />
+
+			<TextView
+				
+				style="@style/TextAppearance.info_label"
+				android:id="@id/gps_result_id"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" />
+
+			<Chronometer
+				
+				style="@style/TextAppearance.info_label"
+				android:id="@id/gps_time_id"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" />
+		</LinearLayout>
+	</ScrollView>
+	<LinearLayout
+	    android:layout_width="fill_parent"
+	    android:layout_height="0dp"
+	    android:layout_weight="1"/>
+	<include layout="@layout/yjzn_btns"/>
+
+</LinearLayout>

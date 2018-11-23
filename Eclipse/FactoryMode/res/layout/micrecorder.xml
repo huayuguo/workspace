@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/info_layout">
+	<include layout="@layout/yjzn_header"/>
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:orientation="vertical" >
+
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal" >
+
+			<Button
+				android:id="@id/mic_bt_start"
+				style="@style/info_label"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:text="@string/Mic_start" />
+		</LinearLayout>
+
+		<RelativeLayout
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:layout_gravity="center" >
+
+			<com.mediatek.factorymode.VUMeter
+				android:id="@id/uvMeter"
+				android:layout_width="300.0px"
+				android:layout_height="125.0px"
+				android:layout_centerInParent="true" />
+		</RelativeLayout>
+	</LinearLayout>
+
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:orientation="vertical" 
+		android:visibility="gone">
+
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="0dp"
+			android:layout_weight="0.5"
+			android:orientation="vertical" >
+
+			<TextView
+				android:id="@id/mic_tips"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_horizontal"
+				android:text="@string/Mic_operation"
+				android:textColor="@color/Green"
+				android:textSize="20.0dip" 
+				style="@style/info_label"/>
+
+			<LinearLayout
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent"
+				android:orientation="horizontal" >
+
+				<Button
+					android:id="@id/mic_bt_ok"
+					android:layout_width="0dp"
+					android:layout_height="fill_parent"
+					android:layout_weight="0.5"
+					android:text="@string/Success"
+					android:textSize="25.0dip" />
+
+				<Button
+					android:id="@id/mic_bt_failed"
+					android:layout_width="0dp"
+					android:layout_height="fill_parent"
+					android:layout_weight="0.5"
+					android:text="@string/Failed"
+					android:textSize="25.0dip" />
+			</LinearLayout>
+		</LinearLayout>
+
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="0dp"
+			android:layout_weight="0.5"
+			android:orientation="vertical" 
+			android:visibility="gone">
+
+			<TextView
+				android:id="@id/mic_tips"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_horizontal"
+				android:text="@string/Speaker_operation"
+				android:textColor="@color/Green"
+				android:textSize="20.0dip" 
+				style="@style/info_label"/>
+
+			<LinearLayout
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent"
+				android:orientation="horizontal"
+				 >
+
+				<Button
+					android:id="@id/speaker_bt_ok"
+					android:layout_width="0dp"
+					android:layout_height="fill_parent"
+					android:layout_weight="0.5"
+					android:text="@string/Success"
+					android:textSize="25.0dip" />
+
+				<Button
+					android:id="@id/speaker_bt_failed"
+					android:layout_width="0dp"
+					android:layout_height="fill_parent"
+					android:layout_weight="0.5"
+					android:text="@string/Failed"
+					android:textSize="25.0dip" />
+			</LinearLayout>
+		</LinearLayout>
+	</LinearLayout>
+	<include layout="@layout/yjzn_btns"/>
+</LinearLayout>

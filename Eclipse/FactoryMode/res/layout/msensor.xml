@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@id/LinearLayout01"
+	style="@style/info_layout" >
+	<include layout="@layout/yjzn_header"/>
+	<TextView
+		android:id="@id/OrientText"
+		android:layout_width="fill_parent"
+		android:layout_height="50.0dip"
+		android:gravity="center"
+		android:text="@string/MSensor_default_text"
+		android:textColor="#ffffffff"
+		android:textSize="20.0dip"
+		android:textStyle="bold" />
+
+	<ImageView
+		android:id="@id/ivCompass"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:src="@drawable/compass" />
+
+	<TextView
+		android:id="@id/OrientValue"
+		android:layout_width="fill_parent"
+		android:layout_height="40.0dip"
+		android:gravity="right|center"
+		android:text="@string/MSensor_default_text"
+		android:textColor="#ffffffff"
+		android:textSize="13.0dip"
+		android:textStyle="bold" />
+	<View android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"/>
+	<include layout="@layout/yjzn_btns"/>
+
+</LinearLayout>
