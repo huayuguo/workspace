@@ -15,8 +15,8 @@ import android.util.TypedValue;
 import android.view.View;
 
 import com.hcn.huangchao.testpressure.R;
-import com.huangchao.dashboardview.HighlightCR;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class DashboardView extends View {
@@ -45,6 +45,7 @@ public class DashboardView extends View {
     private int mModeType;
     private List<HighlightCR> mStripeHighlight; // 高亮范围颜色对象的集合
     private int mBgColor; // 背景色
+    private boolean mIsCircle; // 圆形表盘
 
     private int mViewWidth; // 控件宽度
     private int mViewHeight; // 控件高度
@@ -120,6 +121,7 @@ public class DashboardView extends View {
         mStripeWidth = a.getDimensionPixelSize(R.styleable.DashboardView_stripeWidth, 0);
         mModeType = a.getInt(R.styleable.DashboardView_stripeMode, 0);
         mBgColor = a.getColor(R.styleable.DashboardView_bgColor, backgroundColor);
+        mIsCircle = a.getBoolean(R.styleable.DashboardView_isCircle, false);
 
         a.recycle();
 
@@ -288,6 +290,10 @@ public class DashboardView extends View {
             }
             if (widthMode == MeasureSpec.AT_MOST)
                 mViewHeight = Math.min(mViewHeight, widthSize);
+            if(mIsCircle) {
+                mViewHeight = (totalRadius + mCircleRadius + dpToPx(2) + dpToPx(25)) * 2 +
+                        getPaddingTop() + getPaddingBottom();
+            }
         }
 
         setMeasuredDimension(mViewWidth, mViewHeight);
@@ -408,6 +414,17 @@ public class DashboardView extends View {
             mPaintArc.setColor(mArcColor);
             canvas.drawArc(mRectArc, mStartAngle, mSweepAngle, false, mPaintArc);
         }
+
+        if(mIsCircle) {
+            int endAngle = mStartAngle + mSweepAngle;
+            mPaintArc.setColor(mArcColor);
+            if(endAngle < 360) {
+                canvas.drawArc(mRectArc, 0, mStartAngle, false, mPaintArc);
+                canvas.drawArc(mRectArc, mStartAngle + mSweepAngle, 360 - endAngle, false, mPaintArc);
+            } else {
+                canvas.drawArc(mRectArc, endAngle - 360, mStartAngle - endAngle + 360, false, mPaintArc);
+            }
+        }
     }
 
     /**
@@ -506,10 +523,12 @@ public class DashboardView extends View {
      * float类型如果小数点后为零则显示整数否则保留
      */
     public static String trimFloat(float value) {
+        return  new DecimalFormat("#.00").format(value);
+        /*
         if (Math.round(value) - value == 0) {
             return String.valueOf((long) value);
         }
-        return String.valueOf(value);
+        return String.valueOf(value);*/
     }
 
     public int getRadius() {
@@ -819,7 +838,7 @@ public class DashboardView extends View {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg.what == 0) {
-                stepValue = (mMaxValue - mMinValue) / mSmallSliceCount / 10.0;
+                stepValue = (mMaxValue - mMinValue) / mSmallSliceCount / 16.0;
                 if (preValue > endValue) {
                     preValue -= stepValue;
                 } else if (preValue < endValue) {
@@ -827,7 +846,7 @@ public class DashboardView extends View {
                 }
                 if (Math.abs(preValue - endValue) > stepValue) {
                     mRealTimeValue = preValue;
-                    long t = (long) (duration / deltaValue);
+                    long t = (long) (duration / deltaValue * stepValue);
                     sendEmptyMessageDelayed(0, t);
                 } else {
                     mRealTimeValue = endValue;
