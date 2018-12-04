@@ -141,7 +141,7 @@ public class DashboardView extends View {
             } else if (i == mBigSliceCount) {
                 strings[i] = String.valueOf(mMaxValue);
             } else {
-                strings[i] = String.valueOf(((mMaxValue - mMinValue) / mBigSliceCount) * i);
+                strings[i] = String.valueOf(((mMaxValue - mMinValue) / mBigSliceCount) * i + mMinValue);
             }
         }
 
@@ -332,19 +332,26 @@ public class DashboardView extends View {
      * 绘制刻度盘
      */
     private void drawMeasures(Canvas canvas) {
-        mPaintArc.setStrokeWidth(dpToPx(2));
-        for (int i = 0; i <= mBigSliceCount; i++) {
-            //绘制大刻度
-            float angle = i * mBigSliceAngle + mStartAngle;
-            float[] point1 = getCoordinatePoint(mRadius, angle);
-            float[] point2 = getCoordinatePoint(mBigSliceRadius, angle);
-
+        //绘制刻度
+        int radius = 0;
+        int k = 0;
+        for (int i = 0; i <= mSmallSliceCount; i++) {
+            int isBigSlice = i % mSliceCountInOneBigSlice;
+            if(isBigSlice != 0) {
+                mPaintArc.setStrokeWidth(dpToPx(1));
+                radius = mSmallSliceRadius;
+            } else {
+                mPaintArc.setStrokeWidth(dpToPx(2));
+                radius = mBigSliceRadius;
+            }
+            canvas.save();
+            canvas.translate(mCenterX, mCenterY); //将坐标中心平移到midPoint
+            float angle = i * mSmallSliceAngle + mStartAngle;
             if (mStripeMode == StripeMode.NORMAL && mStripeHighlight != null) {
                 for (int j = 0; j < mStripeHighlight.size(); j++) {
                     HighlightCR highlightCR = mStripeHighlight.get(j);
                     if (highlightCR.getColor() == 0 || highlightCR.getSweepAngle() == 0)
                         continue;
-
                     if (angle <= highlightCR.getStartAngle() + highlightCR.getSweepAngle()) {
                         mPaintArc.setColor(highlightCR.getColor());
                         break;
@@ -355,56 +362,20 @@ public class DashboardView extends View {
             } else {
                 mPaintArc.setColor(mArcColor);
             }
-            canvas.drawLine(point1[0], point1[1], point2[0], point2[1], mPaintArc);
+            canvas.rotate(angle);
+            canvas.drawLine(mRadius,0,radius, 0, mPaintArc);
 
-            //绘制圆盘上的数字
-            mPaintText.setTextSize(mMeasureTextSize);
-            String number = mGraduations[i];
-            mPaintText.getTextBounds(number, 0, number.length(), mRectMeasures);
-            if (angle % 360 > 135 && angle % 360 < 225) {
-                mPaintText.setTextAlign(Paint.Align.LEFT);
-            } else if ((angle % 360 >= 0 && angle % 360 < 45) || (angle % 360 > 315 && angle % 360 <= 360)) {
-                mPaintText.setTextAlign(Paint.Align.RIGHT);
-            } else {
+            if(isBigSlice == 0) {
+                //绘制圆盘上的数字
+                canvas.rotate(90);
+                mPaintText.setTextSize(mMeasureTextSize);
+                String number = mGraduations[k++];
+                mPaintText.getTextBounds(number, 0, number.length(), mRectMeasures);
                 mPaintText.setTextAlign(Paint.Align.CENTER);
+                canvas.drawText(number, 0, -(mNumMeaRadius - mRectMeasures.height()), mPaintText);
             }
-            float[] numberPoint = getCoordinatePoint(mNumMeaRadius, angle);
-            if (i == 0 || i == mBigSliceCount) {
-                canvas.drawText(number, numberPoint[0], numberPoint[1] + (mRectMeasures.height() / 2), mPaintText);
-            } else {
-                canvas.drawText(number, numberPoint[0], numberPoint[1] + mRectMeasures.height(), mPaintText);
-            }
+            canvas.restore();
         }
-
-        //绘制小的子刻度
-        mPaintArc.setStrokeWidth(dpToPx(1));
-        for (int i = 0; i < mSmallSliceCount; i++) {
-            if (i % mSliceCountInOneBigSlice != 0) {
-                float angle = i * mSmallSliceAngle + mStartAngle;
-                float[] point1 = getCoordinatePoint(mRadius, angle);
-                float[] point2 = getCoordinatePoint(mSmallSliceRadius, angle);
-
-                if (mStripeMode == StripeMode.NORMAL && mStripeHighlight != null) {
-                    for (int j = 0; j < mStripeHighlight.size(); j++) {
-                        HighlightCR highlightCR = mStripeHighlight.get(j);
-                        if (highlightCR.getColor() == 0 || highlightCR.getSweepAngle() == 0)
-                            continue;
-
-                        if (angle <= highlightCR.getStartAngle() + highlightCR.getSweepAngle()) {
-                            mPaintArc.setColor(highlightCR.getColor());
-                            break;
-                        } else {
-                            mPaintArc.setColor(mArcColor);
-                        }
-                    }
-                } else {
-                    mPaintArc.setColor(mArcColor);
-                }
-                mPaintArc.setStrokeWidth(dpToPx(1));
-                canvas.drawLine(point1[0], point1[1], point2[0], point2[1], mPaintArc);
-            }
-        }
-
     }
 
     /**
@@ -468,20 +439,20 @@ public class DashboardView extends View {
      * 绘制指针
      */
     private void drawPointer(Canvas canvas) {
+        canvas.save();
+        canvas.translate(mCenterX, mCenterY);
+        canvas.rotate(initAngle);
+        path.reset();
+        path.moveTo(-mCircleRadius / 2, 0);
+        path.lineTo(mCircleRadius / 2, 0);
+        path.lineTo(0, mPointerRadius);
+        path.close();
         mPaintPointer.setStyle(Paint.Style.FILL);
         mPaintPointer.setColor(mTextColor);
-        path.reset();
-        float[] point1 = getCoordinatePoint(mCircleRadius / 2, initAngle + 90);
-        path.moveTo(point1[0], point1[1]);
-        float[] point2 = getCoordinatePoint(mCircleRadius / 2, initAngle - 90);
-        path.lineTo(point2[0], point2[1]);
-        float[] point3 = getCoordinatePoint(mPointerRadius, initAngle);
-        path.lineTo(point3[0], point3[1]);
-        path.close();
         canvas.drawPath(path, mPaintPointer);
         // 绘制三角形指针底部的圆弧效果
-        canvas.drawCircle((point1[0] + point2[0]) / 2, (point1[1] + point2[1]) / 2,
-                mCircleRadius / 2, mPaintPointer);
+        canvas.drawCircle(0, 0,mCircleRadius / 2, mPaintPointer);
+        canvas.restore();
     }
 
     /**

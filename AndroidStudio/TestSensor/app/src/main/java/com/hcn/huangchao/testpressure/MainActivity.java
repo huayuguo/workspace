@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
         dashboardViewHmdy = (DashboardView) findViewById(R.id.dashboard_view_hmdy);
 
         List<HighlightCR> highlight1 = new ArrayList<>();
-        highlight1.add(new HighlightCR(135, 180, Color.parseColor("#03A9F4")));
-        highlight1.add(new HighlightCR(315, 90, Color.parseColor("#FFA000")));
+        highlight1.add(new HighlightCR(135, 187, Color.parseColor("#03A9F4")));
+        highlight1.add(new HighlightCR(322, 83, Color.parseColor("#FFA000")));
         dashboardViewPress.setStripeHighlightColorAndRange(highlight1);
     }
 
