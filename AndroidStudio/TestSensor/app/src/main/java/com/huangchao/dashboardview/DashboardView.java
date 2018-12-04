@@ -421,12 +421,13 @@ public class DashboardView extends View {
         canvas.drawText(mHeaderTitle, mCenterX, mCenterY - mHeaderRadius + mRectHeader.height(), mPaintText);
 
         //绘制中心点的圆
-        mPaintPointer.setStyle(Paint.Style.FILL);
-        mPaintPointer.setColor(mBgColor);
-        canvas.drawCircle(mCenterX, mCenterY, mCircleRadius, mPaintPointer);
+        //mPaintPointer.setStyle(Paint.Style.FILL);
+        //mPaintPointer.setColor(mBgColor);
+        //canvas.drawCircle(mCenterX, mCenterY, mCircleRadius, mPaintPointer);
 
-        mPaintPointer.setStyle(Paint.Style.STROKE);
-        mPaintPointer.setStrokeWidth(dpToPx(4));
+        //mPaintPointer.setStyle(Paint.Style.STROKE);
+        //mPaintPointer.setStrokeWidth(dpToPx(4));
+        mPaintPointer.setStyle(Paint.Style.FILL);
         mPaintPointer.setColor(mTextColor);
         canvas.drawCircle(mCenterX, mCenterY, mCircleRadius + dpToPx(2), mPaintPointer);
 
@@ -443,9 +444,10 @@ public class DashboardView extends View {
         canvas.translate(mCenterX, mCenterY);
         canvas.rotate(initAngle);
         path.reset();
-        path.moveTo(-mCircleRadius / 2, 0);
-        path.lineTo(mCircleRadius / 2, 0);
-        path.lineTo(0, mPointerRadius);
+        path.moveTo(0, -mCircleRadius / 2);
+        path.lineTo(0, mCircleRadius / 2);
+        path.lineTo(mPointerRadius, mCircleRadius / 16);
+        path.lineTo(mPointerRadius, -mCircleRadius / 16);
         path.close();
         mPaintPointer.setStyle(Paint.Style.FILL);
         mPaintPointer.setColor(mTextColor);
