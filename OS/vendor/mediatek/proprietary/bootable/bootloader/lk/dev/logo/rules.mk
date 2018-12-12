@@ -12,6 +12,19 @@ ifeq ($(strip $(MTK_LK_CAMERA_SUPPORT)), yes)
   BOOT_LOGO = fhd
 endif
 
+$(info CUSTOM_BUILD_LOGO_VERSION = $(CUSTOM_BUILD_LOGO_VERSION))
+ifeq ($(strip $(CUSTOM_BUILD_LOGO_VERSION)), H)
+  BOOT_LOGO := h_$(BOOT_LOGO)
+else
+  ifeq ($(strip $(CUSTOM_BUILD_LOGO_VERSION)), L)
+	BOOT_LOGO := l_$(BOOT_LOGO)
+  else
+	ifeq ($(strip $(CUSTOM_BUILD_LOGO_VERSION)), K)
+	  BOOT_LOGO := k_$(BOOT_LOGO)
+	endif
+  endif
+endif
+
 $(info BOOT_LOGO = $(BOOT_LOGO))
 $(info lk/logo/dir=$(LOCAL_DIR),builddir=$(BUILDDIR))
 

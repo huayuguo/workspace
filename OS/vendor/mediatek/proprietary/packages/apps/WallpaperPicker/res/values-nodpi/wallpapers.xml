@@ -17,10 +17,27 @@
 
 <resources>
     <string-array name="wallpapers" translatable="false">
-		<item>wallpaper_01</item>
-		<item>wallpaper_02</item>
-		<item>wallpaper_03</item>
-		<item>wallpaper_04</item>
-		<item>wallpaper_05</item>
+    </string-array>
+	<string-array name="wallpapers_h" translatable="false">
+        <item>wallpaper_h_dark</item>
+		<item>wallpaper_z</item>
+		<item>wallpaper_z_dark</item>
+		<item>wallpaper_k</item>
+		<item>wallpaper_k_dark</item>
+    </string-array>
+    <string-array name="wallpapers_k" translatable="false">
+        <item>wallpaper_k_dark</item>
+		<item>wallpaper_z</item>
+		<item>wallpaper_z_dark</item>
+		<item>wallpaper_h</item>
+		<item>wallpaper_h_dark</item>
+    </string-array>
+	<string-array name="wallpapers_l" translatable="false">
+        <item>wallpaper_k</item>
+		<item>wallpaper_k_dark</item>
+		<item>wallpaper_z</item>
+		<item>wallpaper_z_dark</item>
+		<item>wallpaper_h</item>
+		<item>wallpaper_h_dark</item>
     </string-array>
 </resources>

@@ -136,6 +136,24 @@ ifeq ($(strip $(OPTR_SPEC_SEG_DEF)),NONE)
     PRODUCT_PACKAGES += DangerDash
 endif
 
+
+ifeq ($(strip $(CUSTOM_BUILD_LOGO_VERSION)), H)
+  PRODUCT_COPY_FILES += $(LOCAL_PATH)/bootanimation_h.zip:system/media/bootanimation.zip
+  PRODUCT_COPY_FILES += $(LOCAL_PATH)/default_wallpaper_h.png:system/media/default_wallpaper.png
+else
+  ifeq ($(strip $(CUSTOM_BUILD_LOGO_VERSION)), L)
+    PRODUCT_COPY_FILES += $(LOCAL_PATH)/bootanimation_l.zip:system/media/bootanimation.zip
+	PRODUCT_COPY_FILES += $(LOCAL_PATH)/default_wallpaper_l.png:system/media/default_wallpaper.png
+  else
+    ifeq ($(strip $(CUSTOM_BUILD_LOGO_VERSION)), K)
+      PRODUCT_COPY_FILES += $(LOCAL_PATH)/bootanimation_k.zip:system/media/bootanimation.zip
+	  PRODUCT_COPY_FILES += $(LOCAL_PATH)/default_wallpaper_k.png:system/media/default_wallpaper.png
+	else
+	  PRODUCT_COPY_FILES += $(LOCAL_PATH)/bootanimation.zip:system/media/bootanimation.zip
+    endif
+  endif
+endif
+
 $(call inherit-product, device/mediatek/mt6763/device.mk)
 
 $(call inherit-product-if-exists, vendor/mediatek/libs/$(MTK_TARGET_PROJECT)/device-vendor.mk)

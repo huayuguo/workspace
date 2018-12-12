@@ -60,4 +60,8 @@ if [ -n "$BUILD_THUMBPRINT" ] ; then
 fi
 echo "ro.build.characteristics=$TARGET_AAPT_CHARACTERISTICS"
 
+if [ -n "$CUSTOM_BUILD_LOGO_VERSION" ] ; then
+  echo "persist.sys.wallpaper.picker=$CUSTOM_BUILD_LOGO_VERSION"
+fi
+
 echo "# end build properties"

@@ -443,8 +443,30 @@ public class WallpaperPickerActivity extends WallpaperCropActivity
         }
         return bundled;
     }
+	
+	public static String getProp(String propName) {
+        Class<?> classType = null;
+        String buildVersion = null;
+        try {
+            classType = Class.forName("android.os.SystemProperties");
+            Method getMethod = classType.getDeclaredMethod("get", new Class<?>[]{String.class});
+            buildVersion = (String) getMethod.invoke(classType, new Object[]{propName});
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return buildVersion;
+    }
 
     public Pair<ApplicationInfo, Integer> getWallpaperArrayResourceId() {
+		String wp = getProp("persist.sys.wallpaper.picker");
+		Log.v(TAG, "getWallpaperArrayResourceId : " + wp);
+		if (wp.equals("H")) {
+			return new Pair<>(getApplicationInfo(), R.array.wallpapers_h);
+		} else if (wp.equals("L")) {
+			return new Pair<>(getApplicationInfo(), R.array.wallpapers_l);
+		} else if (wp.equals("K")) {
+			return new Pair<>(getApplicationInfo(), R.array.wallpapers_k);
+		}
         return new Pair<>(getApplicationInfo(), R.array.wallpapers);
     }
 

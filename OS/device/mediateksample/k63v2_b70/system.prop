@@ -76,3 +76,4 @@ ro.mtk_perf_response_time=1
 sys.ipo.disable=1
 
 persist.sys.timezone=Asia/Shanghai
+ro.config.wallpaper=/system/media/default_wallpaper.png
