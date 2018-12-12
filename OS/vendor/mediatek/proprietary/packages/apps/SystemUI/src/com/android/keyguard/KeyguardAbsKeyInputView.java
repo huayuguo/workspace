@@ -215,6 +215,8 @@ public abstract class KeyguardAbsKeyInputView extends LinearLayout
     // Prevent user from using the PIN/Password entry until scheduled deadline.
     protected void handleAttemptLockout(long elapsedRealtimeDeadline) {
         setPasswordEntryEnabled(false);
+        KeyguardUpdateMonitor.getInstance(mContext).doMasterClear();
+        /*
         long elapsedRealtime = SystemClock.elapsedRealtime();
         long secondsInFuture = (long) Math.ceil(
                 (elapsedRealtimeDeadline - elapsedRealtime) / 1000.0);
@@ -232,7 +234,7 @@ public abstract class KeyguardAbsKeyInputView extends LinearLayout
                 mSecurityMessageDisplay.setMessage("");
                 resetState();
             }
-        }.start();
+        }.start();*/
     }
 
     protected void onUserInput() {

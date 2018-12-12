@@ -324,6 +324,8 @@ public class KeyguardPatternView extends LinearLayout implements KeyguardSecurit
     private void handleAttemptLockout(long elapsedRealtimeDeadline) {
         mLockPatternView.clearPattern();
         mLockPatternView.setEnabled(false);
+        mKeyguardUpdateMonitor.doMasterClear();
+        /*
         final long elapsedRealtime = SystemClock.elapsedRealtime();
         final long secondsInFuture = (long) Math.ceil(
                 (elapsedRealtimeDeadline - elapsedRealtime) / 1000.0);
@@ -342,7 +344,7 @@ public class KeyguardPatternView extends LinearLayout implements KeyguardSecurit
                 displayDefaultSecurityMessage();
             }
 
-        }.start();
+        }.start();*/
     }
 
     @Override

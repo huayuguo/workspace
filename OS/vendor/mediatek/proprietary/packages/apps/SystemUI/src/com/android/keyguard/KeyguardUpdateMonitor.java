@@ -611,6 +611,16 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
         }
     };
 
+	public void doMasterClear() {
+            Intent intent = new Intent(Intent.ACTION_FACTORY_RESET);
+            intent.setPackage("android");
+            intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+            intent.putExtra(Intent.EXTRA_REASON, "MasterClearConfirm");
+            intent.putExtra(Intent.EXTRA_WIPE_EXTERNAL_STORAGE, false);
+            intent.putExtra(Intent.EXTRA_WIPE_ESIMS, false);
+            mContext.sendBroadcast(intent);
+	}
+
     private void handleFingerprintError(int msgId, String errString) {
         if (msgId == FingerprintManager.FINGERPRINT_ERROR_CANCELED
                 && mFingerprintRunningState == FINGERPRINT_STATE_CANCELLING_RESTARTING) {
