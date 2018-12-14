@@ -1,0 +1,376 @@
+前提：
+1. Keyguard解锁分为：PIN、Password、Pattern、Fingerprint
+2. Fingerprint作为辅助解锁方式，需要与其它模式组合使用。
+3. PIN、Password都属于密码类型，密码验证代码在KeyguardAbsKeyInputView.java中实现。
+4. Pattern属于图形模式，图形验证代码在KeyguardPatternView.java中实现。
+5. 三种模式都是通过调用LockPatternChecker类的函数完成，底层则在gatekeeper中实现密码验证。
+6. 本文只分析密码验证过程，暂不分析密码登记过程。
+
+一、不同Keyguard调用LockPatternChecker过程：
+1. PIN & Password 模式
+(1) PIN 模式
+KeyguardPINView->KeyguardPinBasedInputView->KeyguardAbsKeyInputView
+KeyguardPinBasedInputView.java
+protected void onFinishInflate() {
+	...
+	mOkButton = findViewById(R.id.key_enter);
+	if (mOkButton != null) {
+		mOkButton.setOnTouchListener(this);
+		mOkButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mPasswordEntry.isEnabled()) {
+					verifyPasswordAndUnlock();
+				}
+			}
+		});
+		mOkButton.setOnHoverListener(new LiftToActivateListener(getContext()));
+	}
+	...
+}
+
+(2) Password 模式
+KeyguardPasswordView->KeyguardAbsKeyInputView
+KeyguardPasswordView.java
+public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+	...
+	if (isSoftImeEvent || isKeyboardEnterKey) {
+		verifyPasswordAndUnlock();
+		return true;
+	}
+	return false;
+}
+
+(3) verifyPasswordAndUnlock 函数实现
+KeyguardAbsKeyInputView.java
+protected LockPatternUtils mLockPatternUtils;
+protected void verifyPasswordAndUnlock() {
+	...
+	final String entry = getPasswordText();
+	...
+	mPendingLockCheck = LockPatternChecker.checkPassword(
+			mLockPatternUtils,
+			entry,
+			userId,
+			new LockPatternChecker.OnCheckCallback() {
+				@Override
+				public void onEarlyMatched() {
+					...
+				}
+				@Override
+				public void onChecked(boolean matched, int timeoutMs) {
+					...
+				}
+				@Override
+				public void onCancelled() {
+					...
+				}
+			});
+	...
+}
+通过getPasswordText从UI获取密码字符串，调用LockPatternChecker.checkPassword进行密码验证。第二个参数传递密码字符串，第四个参数传递一个回调函数，反馈验证结果。checkPassword第二个参数传递密码字符串，第四个参数传递一个回调函数，反馈验证结果。
+OnCheckCallback有三个回调接口：
+a. OnCheckCallback 密码匹配成功后回调，比onChecked先调用，加快解锁速度
+b. onChecked 密码验证完成后回调（成功\失败都会调用）
+c. onCancelled 取消校验时回调
+
+2. Pattern 模式
+public void onPatternDetected(final List<LockPatternView.Cell> pattern) {
+	mPendingLockCheck = LockPatternChecker.checkPattern(
+			mLockPatternUtils,
+			pattern,
+			userId,
+			new LockPatternChecker.OnCheckCallback() {
+				...
+			});
+}
+checkPattern方式参数与checkPassword相似，只是第二参数是图形连线。
+
+二、密码验证过程分析
+上文分析checkPassword、checkPattern共同完成密码验证，其实两个函数在内部都是通过调用checkCredential函数将验证转交给底层的。
+以checkPattern为例：
+LockPatternChecker.java
+public static AsyncTask<?, ?, ?> checkPattern(final LockPatternUtils utils,
+		final List<LockPatternView.Cell> pattern,
+		final int userId,
+		final OnCheckCallback callback) {
+	AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+		private int mThrottleTimeout;
+		private List<LockPatternView.Cell> patternCopy;
+
+		@Override
+		protected void onPreExecute() {
+			// Make a copy of the pattern to prevent race conditions.
+			// No need to clone the individual cells because they are immutable.
+			patternCopy = new ArrayList(pattern);
+		}
+
+		@Override
+		protected Boolean doInBackground(Void... args) {
+			try {
+				return utils.checkPattern(patternCopy, userId, callback::onEarlyMatched);
+			} catch (RequestThrottledException ex) {
+				mThrottleTimeout = ex.getTimeoutMs();
+				return false;
+			}
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			callback.onChecked(result, mThrottleTimeout);
+		}
+
+		@Override
+		protected void onCancelled() {
+			callback.onCancelled();
+		}
+	};
+	task.execute();
+	return task;
+}
+此处定义一个异步任务，utils.checkPattern会在后台执行。此函数会抛出RequestThrottledException异常，此异常主要是由于尝试次数过多触发。
+并且ex.getTimeoutMs函数返回停止密码验证的延时（此延时有gatekeeper写入）。
+
+LockPatternUtils.java
+public boolean checkPattern(List<LockPatternView.Cell> pattern, int userId,
+		@Nullable CheckCredentialProgressCallback progressCallback)
+		throws RequestThrottledException {
+	throwIfCalledOnMainThread();
+	return checkCredential(patternToString(pattern), CREDENTIAL_TYPE_PATTERN, userId,
+			progressCallback);
+}
+通过patternToString函数将pattern转换成字符串。从而保证与PIN、Password方式验证接口一致。
+
+private boolean checkCredential(String credential, int type, int userId,
+		@Nullable CheckCredentialProgressCallback progressCallback)
+		throws RequestThrottledException {
+	try {
+		VerifyCredentialResponse response = getLockSettings().checkCredential(credential, type,
+				userId, wrapCallback(progressCallback));
+
+		if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK) {
+			return true;
+		} else if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_RETRY) {
+			throw new RequestThrottledException(response.getTimeout());
+		} else {
+			return false;
+		}
+	} catch (RemoteException re) {
+		return false;
+	}
+}
+通过远程调用"lock_settings"服务验证密码，当返回值为RESPONSE_RETRY时，抛出异常。
+
+public ILockSettings getLockSettings() {
+	if (mLockSettingsService == null) {
+		ILockSettings service = ILockSettings.Stub.asInterface(
+				ServiceManager.getService("lock_settings"));
+		mLockSettingsService = service;
+	}
+	return mLockSettingsService;
+}
+
+"lock_settings"服务对应的源码为LockSettingService.java:
+public VerifyCredentialResponse checkCredential(String credential, int type, int userId,
+		ICheckCredentialProgressCallback progressCallback) throws RemoteException {
+	checkPasswordReadPermission(userId);
+	return doVerifyCredential(credential, type, false, 0, userId, progressCallback);
+}
+
+private VerifyCredentialResponse doVerifyCredential(String credential, int credentialType,
+		boolean hasChallenge, long challenge, int userId,
+		ICheckCredentialProgressCallback progressCallback) throws RemoteException {
+	...
+	VerifyCredentialResponse response = null;
+	response = spBasedDoVerifyCredential(credential, credentialType, hasChallenge, challenge,
+			userId, progressCallback);		
+	// The user employs synthetic password based credential.
+	if (response != null) {
+		Slog.v(TAG, "doVerifyCredential spBasedDoVerifyCredential code : " + response.getResponseCode() +  " timeout " + response.getTimeout());
+		return response;
+	}
+	...
+
+	return response;
+}
+
+private VerifyCredentialResponse spBasedDoVerifyCredential(String userCredential, int
+		credentialType, boolean hasChallenge, long challenge, int userId,
+		ICheckCredentialProgressCallback progressCallback) throws RemoteException {
+	...
+	final AuthenticationResult authResult;
+	VerifyCredentialResponse response;
+	synchronized (mSpManager) {
+		...
+		long handle = getSyntheticPasswordHandleLocked(userId);
+		authResult = mSpManager.unwrapPasswordBasedSyntheticPassword(
+				getGateKeeperService(), handle, userCredential, userId);
+
+		if (authResult.credentialType != credentialType) {
+			Slog.e(TAG, "Credential type mismatch.");
+			return VerifyCredentialResponse.ERROR;
+		}
+		response = authResult.gkResponse;
+		// credential has matched
+		if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK) {
+			// perform verifyChallenge with synthetic password which generates the real GK auth
+			// token and response for the current user
+			response = mSpManager.verifyChallenge(getGateKeeperService(), authResult.authToken,
+					challenge, userId);
+			if (response.getResponseCode() != VerifyCredentialResponse.RESPONSE_OK) {
+				// This shouldn't really happen: the unwrapping of SP succeeds, but SP doesn't
+				// match the recorded GK password handle.
+				Slog.wtf(TAG, "verifyChallenge with SP failed.");
+				return VerifyCredentialResponse.ERROR;
+			}
+		}
+	}
+
+	if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK) {
+		if (progressCallback != null) {
+			progressCallback.onCredentialVerified();
+		}
+		notifyActivePasswordMetricsAvailable(userCredential, userId);
+		unlockKeystore(authResult.authToken.deriveKeyStorePassword(), userId);
+
+		final byte[] secret = authResult.authToken.deriveDiskEncryptionKey();
+		Slog.i(TAG, "Unlocking user " + userId + " with secret only, length " + secret.length);
+		unlockUser(userId, null, secret);
+
+		activateEscrowTokens(authResult.authToken, userId);
+
+		if (isManagedProfileWithSeparatedLock(userId)) {
+			TrustManager trustManager =
+					(TrustManager) mContext.getSystemService(Context.TRUST_SERVICE);
+			trustManager.setDeviceLockedForUser(userId, false);
+		}
+		mStrongAuth.reportSuccessfulStrongAuthUnlock(userId);
+	} else if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_RETRY) {
+		if (response.getTimeout() > 0) {
+			requireStrongAuth(STRONG_AUTH_REQUIRED_AFTER_LOCKOUT, userId);
+		}
+	}
+
+	return response;
+}
+
+SyntheticPasswordManager.java
+public AuthenticationResult unwrapPasswordBasedSyntheticPassword(IGateKeeperService gatekeeper,
+		long handle, String credential, int userId) throws RemoteException {
+	...
+	byte[] gkPwdToken = passwordTokenToGkInput(pwdToken);
+	GateKeeperResponse response = gatekeeper.verifyChallenge(fakeUid(userId), 0L,
+			pwd.passwordHandle, gkPwdToken);
+	int responseCode = response.getResponseCode();
+	if (responseCode == GateKeeperResponse.RESPONSE_OK) {
+		result.gkResponse = VerifyCredentialResponse.OK;
+		...
+	} else if (responseCode == GateKeeperResponse.RESPONSE_RETRY) {
+		result.gkResponse = new VerifyCredentialResponse(response.getTimeout());
+		return result;
+	} else  {
+		result.gkResponse = VerifyCredentialResponse.ERROR;
+		return result;
+	}
+	sid = sidFromPasswordHandle(pwd.passwordHandle);
+	applicationId = transformUnderSecdiscardable(pwdToken,
+			loadSecdiscardable(handle, userId));
+
+	result.authToken = unwrapSyntheticPasswordBlob(handle, SYNTHETIC_PASSWORD_PASSWORD_BASED,
+			applicationId, sid, userId);
+
+	// Perform verifyChallenge to refresh auth tokens for GK if user password exists.
+	result.gkResponse = verifyChallenge(gatekeeper, result.authToken, 0L, userId);
+	return result;
+}
+
+
+GateKeeperService是一个远程服务，其服务端代码在IGateKeeperService.cpp中实现，verifyChallenge本地实现如下：
+system/core/gatekeeperd/IGateKeeperService.cpp
+	case VERIFY_CHALLENGE: {
+		...
+		int ret = verifyChallenge(uid, challenge, (uint8_t *) currentPasswordHandle,
+				currentPasswordHandleSize, (uint8_t *) currentPassword, currentPasswordSize,
+				&out, &outSize, &request_reenroll);
+		...
+		return NO_ERROR;
+	}
+此处需要说明的是，GateKeeperService对应的client是java实现，参数传递和获取有所差异，比如gkPwdToken是byte[]类型，
+在C++中获取该参数需要获取两次，分别是长度（currentPasswordSize）、值（currentPassword）。
+
+gatekeeperd.cpp
+virtual int verifyChallenge(uint32_t uid, uint64_t challenge,
+            const uint8_t *enrolled_password_handle, uint32_t enrolled_password_handle_length,
+            const uint8_t *provided_password, uint32_t provided_password_length,
+            uint8_t **auth_token, uint32_t *auth_token_length, bool *request_reenroll) {
+			...
+                Return<void> hwRes = hw_device->verify(uid, challenge, curPwdHandle, enteredPwd,
+                                        [&ret, request_reenroll, auth_token, auth_token_length]
+                                             (const GatekeeperResponse &rsp) {
+			...
+        return ret;
+    }
+最终会调用hal层中的verify函数。
+vendor/mediatek/proprietary/hardware/gatekeeper/src/HalAdaptationLayer.cpp
+int HalAdaptationLayer::verify(
+    const struct gatekeeper_device *dev, uint32_t uid, uint64_t challenge,
+    const uint8_t *enrolled_password_handle, uint32_t enrolled_password_handle_length,
+    const uint8_t *provided_password, uint32_t provided_password_length,
+    uint8_t **auth_token, uint32_t *auth_token_length, bool *request_reenroll)
+{
+	...
+    SoftProxy sProxy(dev);
+    sProxy->Verify(request, &response);
+
+    if (gatekeeper::ERROR_RETRY == response.error)
+    {
+        return response.retry_timeout;
+    }
+    else if (gatekeeper::ERROR_NONE != response.error)
+    {
+        return -(response.error);
+    }
+	...
+    return 0;
+}
+
+此处使用了软件Gatekeeper，SoftProxy引用了SoftGateKeeperDevice，而SoftGateKeeperDevice继承至GateKeeper。
+GateKeeper定义在system/gatekeeper/gatekeeper.cpp中：
+void GateKeeper::Verify(const VerifyRequest &request, VerifyResponse *response) {
+    if (response == NULL) return;
+	...
+    if (throttle) {
+        failure_record_t record;
+        if (!GetFailureRecord(uid, user_id, &record, throttle_secure)) {
+            response->error = ERROR_UNKNOWN;
+            return;
+        }
+
+        if (ThrottleRequest(uid, timestamp, &record, throttle_secure, response)) return;
+
+        if (!IncrementFailureRecord(uid, user_id, timestamp, &record, throttle_secure)) {
+            response->error = ERROR_UNKNOWN;
+            return;
+        }
+
+        timeout = ComputeRetryTimeout(&record);
+    } else {
+        response->request_reenroll = true;
+    }
+
+    if (DoVerify(password_handle, request.provided_password)) {
+		...
+    } else {
+        // compute the new timeout given the incremented record
+        if (throttle && timeout > 0) {
+            response->SetRetryTimeout(timeout);
+        } else {
+            response->error = ERROR_INVALID;
+        }
+    }
+}
+此处的Verity则是密码验证的最终实现。并实现了出错重试机制(ComputeRetryTimeout)。
+
+
+
+
