@@ -1,0 +1,583 @@
+commit e792e29a7e04c9652f4f5e0943deda509a0cb7ca
+Author: Jerry <hexh@szroco.com>
+Date:   Thu Aug 18 20:11:16 2016 +0800
+
+    Buildtools:
+        1.DCT:    Redirection codegen.dws to roco
+        2.DDR:    Redirection custom_MemoryDevice.h to roco
+        3.CFG:    Merge roco ProjectConfig.mk to Common ProjectConfig.mk
+        4.PL :    merge roco joyaszxxxx_pl.mk to Common pl joyaszxxxx.mk
+        5.LK :    merge roco joyaszxxxx_lk.mk to Common lk joyaszxxxx.mk
+        6.KERNEL: Merge roco joyasz_xxx_defconfig joyasz_xxx_debug_defconfig to Common
+        7.PTGEN:  Redirection partition_table_MT*.xls to roco
+        8.ROCO:   ROCO_PROJECT env must set for build
+        9.lunch:  Add roco project lunch menu for auto set ROCO_PROJECT env
+       10.GIT:    Save git log > /system/data/misc/git.log
+       11.LOGO:   Redirection logo to roco
+       12.buildprop:  system.prop > build.prop
+       13.items: Auto cp items*.ini to out/target/product/$(TARGET_DEVICE)
+       14.GMS.mk Product_roco.mk overlay
+
+diff --git a/build/core/Makefile b/build/core/Makefile
+old mode 100644
+new mode 100755
+index 692f6cb..200c819
+--- a/build/core/Makefile
++++ b/build/core/Makefile
+@@ -184,6 +184,11 @@ system_prop_file := $(TARGET_SYSTEM_PROP)
+ else
+ system_prop_file := $(wildcard $(TARGET_DEVICE_DIR)/system.prop)
+ endif
++#ROCO_ShiYouHui add for custom system.prop @2015-10-08 >>>
++ifneq ($(strip $(ROCO_PROJECT)),)
++	roco_system_prop_file := $(wildcard $(TARGET_DEVICE_DIR)/roco/$(ROCO_PROJECT)/system.prop)
++endif
++#ROCO_ShiYouHui add for custom system.prop @2015-10-08 <<<
+ $(intermediate_system_build_prop): $(BUILDINFO_SH) $(INTERNAL_BUILD_ID_MAKEFILE) $(BUILD_SYSTEM)/version_defaults.mk $(system_prop_file) $(INSTALLED_ANDROID_INFO_TXT_TARGET)
+ 	@echo Target buildinfo: $@
+ 	@mkdir -p $(dir $@)
+@@ -252,6 +257,13 @@ ifeq ($(strip $(MTK_CIP_SUPPORT)),yes)
+ 	$(hide) echo "import /custom/cip-build.prop" >> $@;
+ endif
+ 
++	#ROCO_ShiYouHui add for custom system.prop @2015-10-14 >>>
++	$(hide) if [ ! -z "$(roco_system_prop_file)" ]; then \
++			if [ -f "$(roco_system_prop_file)" ]; then \
++				build/tools/merge_roco.sh systemprop $(roco_system_prop_file) $(intermediate_system_build_prop); \
++			fi \
++		fi
++	#ROCO_ShiYouHui add for custom system.prop @2015-10-14 >>>
+ build_desc :=
+ 
+ ifeq (,$(filter true, $(TARGET_NO_KERNEL) $(TARGET_NO_RECOVERY)))
+diff --git a/build/core/dumpvar.mk b/build/core/dumpvar.mk
+old mode 100644
+new mode 100755
+index 510bc7d..3e373fe
+--- a/build/core/dumpvar.mk
++++ b/build/core/dumpvar.mk
+@@ -64,6 +64,18 @@ endif # CALLED_FROM_SETUP
+ 
+ ifneq ($(PRINT_BUILD_CONFIG),)
+ HOST_OS_EXTRA:=$(shell python -c "import platform; print(platform.platform())")
++ROCO_TEMP:=$(TARGET_PRODUCT)
++ROCO_PROMK:=$(shell build/tools/merge_roco.sh systemprop $(PWD)/device/joya_sz/$(subst full_,,$(ROCO_TEMP))/roco/$(ROCO_PROJECT)/ProjectConfig.mk $(PWD)/device/joya_sz/$(subst full_,,$(ROCO_TEMP))/ProjectConfig.mk)
++ifeq ($(TARGET_BUILD_VARIANT),eng)
++ROCO_PRODEFC:=$(shell build/tools/merge_roco.sh defconfig $(PWD)/device/joya_sz/$(subst full_,,$(ROCO_TEMP))/roco/$(ROCO_PROJECT)/$(subst full_,,$(ROCO_TEMP))_debug_defconfig  $(PWD)/kernel-3.18/arch/$(TARGET_ARCH)/configs/$(subst full_,,$(ROCO_TEMP))_debug_defconfig )
++else
++ROCO_PRODEFC:=$(shell build/tools/merge_roco.sh defconfig $(PWD)/device/joya_sz/$(subst full_,,$(ROCO_TEMP))/roco/$(ROCO_PROJECT)/$(subst full_,,$(ROCO_TEMP))_defconfig  $(PWD)/kernel-3.18/arch/$(TARGET_ARCH)/configs/$(subst full_,,$(ROCO_TEMP))_defconfig )
++endif
++# merge pl.mk lk.mk
++ROCO_PRODEFC:=$(shell build/tools/merge_roco.sh systemprop $(PWD)/device/joya_sz/$(subst full_,,$(ROCO_TEMP))/roco/$(ROCO_PROJECT)/$(subst full_,,$(ROCO_TEMP))_pl.mk  $(PWD)/vendor/mediatek/proprietary/bootable/bootloader/preloader/custom/$(subst full_,,$(ROCO_TEMP))/$(subst full_,,$(ROCO_TEMP)).mk )
++
++ROCO_PRODEFC:=$(shell build/tools/merge_roco.sh systemprop $(PWD)/device/joya_sz/$(subst full_,,$(ROCO_TEMP))/roco/$(ROCO_PROJECT)/$(subst full_,,$(ROCO_TEMP))_lk.mk  $(PWD)/vendor/mediatek/proprietary/bootable/bootloader/lk/project/$(subst full_,,$(ROCO_TEMP)).mk )
++
+ $(info ============================================)
+ $(info   PLATFORM_VERSION_CODENAME=$(PLATFORM_VERSION_CODENAME))
+ $(info   PLATFORM_VERSION=$(PLATFORM_VERSION))
+diff --git a/build/core/main.mk b/build/core/main.mk
+old mode 100644
+new mode 100755
+index 2a6106f..2e4f230
+--- a/build/core/main.mk
++++ b/build/core/main.mk
+@@ -496,6 +496,23 @@ ifneq ($(dont_bother),true)
+ 
+ # Can't use first-makefiles-under here because
+ # --mindepth=2 makes the prunes not work.
++ifeq ($(strip $(ROCO_PROJECT)),)
++    $(info ***************************************************************)
++    $(info ERROR: ROCO_PROJECT is not set)
++    $(info ***************************************************************)
++    exit
++else
++    $(info ***************************************************************)
++    ROCO_TEMP:=$(TARGET_PRODUCT)
++    ROCO_PROJECT_DIR := $(TOP)/device/joya_sz/$(subst full_,,$(ROCO_TEMP))/roco/$(ROCO_PROJECT)
++ifeq ($(ROCO_PROJECT_DIR), $(wildcard $(ROCO_PROJECT_DIR)))
++    $(info ROCO_PROJECT = $(ROCO_PROJECT))
++else
++    $(info $(ROCO_PROJECT_DIR) not found this project)
++    exit
++endif
++    $(info ***************************************************************)
++endif
+ subdir_makefiles := \
+ 	$(shell build/tools/findleaves.py $(FIND_LEAVES_EXCLUDES) $(subdirs) Android.mk)
+ 
+@@ -1029,9 +1046,19 @@ endif  # samplecode in $(MAKECMDGOALS)
+ findbugs: $(INTERNAL_FINDBUGS_HTML_TARGET) $(INTERNAL_FINDBUGS_XML_TARGET)
+ 
+ .PHONY: clean
++dirs_to_clean := \
++	$(PRODUCT_OUT) \
++	$(TARGET_COMMON_OUT_ROOT) \
++	$(HOST_OUT) \
++	$(HOST_COMMON_OUT_ROOT)
+ clean:
+-	@rm -rf $(OUT_DIR)/*
+-	@echo "Entire build directory removed."
++	@for dir in $(dirs_to_clean) ; do \
++	    echo "Cleaning $$dir..."; \
++	    rm -rf $$dir; \
++	done
++	@echo "Clean."; \
++	#@rm -rf $(OUT_DIR)/*
++	#@echo "Entire build directory removed."
+ 
+ .PHONY: clobber
+ clobber: clean
+diff --git a/build/envsetup.sh b/build/envsetup.sh
+old mode 100644
+new mode 100755
+index 18d84f9..fa5bb69
+--- a/build/envsetup.sh
++++ b/build/envsetup.sh
+@@ -447,6 +447,8 @@ function choosecombo()
+ # Clear this variable.  It will be built up again when the vendorsetup.sh
+ # files are included at the end of this file.
+ unset LUNCH_MENU_CHOICES
++unset LUNCH_ROCO_CHOICES
++
+ function add_lunch_combo()
+ {
+     local new_combo=$1
+@@ -459,6 +461,17 @@ function add_lunch_combo()
+     LUNCH_MENU_CHOICES=(${LUNCH_MENU_CHOICES[@]} $new_combo)
+ }
+ 
++function add_roco_lunch_combo()
++{
++    local new_combo="$1"
++    local c
++    for c in ${LUNCH_ROCO_CHOICES[@]} ; do
++        if [ "$new_combo" = "$c" ] ; then
++            return
++        fi
++    done
++    LUNCH_ROCO_CHOICES=(${LUNCH_ROCO_CHOICES[@]} $new_combo)
++}
+ # add the default one here
+ add_lunch_combo aosp_arm-eng
+ add_lunch_combo aosp_arm64-eng
+@@ -486,12 +499,37 @@ function print_lunch_menu()
+     echo
+ }
+ 
++
++function print_lunch_roco_menu()
++{
++    echo
++    echo
++    echo "Lunch menu... pick a combo:"
++
++    local i=1
++    local choice
++    for choice in ${LUNCH_ROCO_CHOICES[@]}
++    do
++        echo "     $i. $choice"
++        i=$(($i+1))
++    done
++
++    echo
++}
++
+ function lunch()
+ {
+     local answer
++    local answer_roco
+ 
+     if [ "$1" ] ; then
+         answer=$1
++        if [ "$2" ];then
++            answer_roco="$2"
++        else
++            echo "Invalid ROCO_PROJECT !!!"
++            return
++        fi
+     else
+         print_lunch_menu
+         echo -n "Which would you like? [aosp_arm-eng] "
+@@ -499,6 +537,8 @@ function lunch()
+     fi
+ 
+     local selection=
++    local selection_roco=
++    local selection_roco_default=
+ 
+     if [ -z "$answer" ]
+     then
+@@ -521,6 +561,49 @@ function lunch()
+         return 1
+     fi
+ 
++    unset LUNCH_ROCO_CHOICES
++    tmp=$selection
++    tmp=${tmp#*full_}
++    tmp=${tmp%-*}
++    for i in `ls device/joya_sz/"$tmp"/roco`
++    do
++        if [ -d "device/joya_sz/"$tmp"/roco/$i" ];then
++            if [ "$i" != "Demo" ];then
++                selection_roco_default="$i"
++                add_roco_lunch_combo "$i"
++            fi
++        fi
++    done
++
++    if [ ! "$1" ];then
++        print_lunch_roco_menu
++        echo -n "Which ROCO_PROJECT would you like? "
++        read answer_roco
++    fi
++    if [ -z "$answer_roco" ]
++    then
++        selection_roco="$selection_roco_default"
++    elif (echo -n $answer_roco | grep -q -e "^[0-9][0-9]*$")
++    then
++        if [ $answer_roco -le ${#LUNCH_ROCO_CHOICES[@]} ]
++        then
++            selection_roco=${LUNCH_ROCO_CHOICES[$(($answer_roco-1))]}
++        fi
++    elif (echo ${LUNCH_ROCO_CHOICES[@]} | grep -wq "$answer_roco")
++    then
++        selection_roco=$answer_roco
++    fi
++
++    if [ -z "$selection_roco" ]
++    then
++        echo
++        echo "Invalid lunch roco project : $answer_roco"
++        return 1
++    fi
++
++    echo ROCO_PROJECT=$selection_roco
++    export ROCO_PROJECT="$selection_roco"
++
+     export TARGET_BUILD_APPS=
+ 
+     local product=$(echo -n $selection | sed -e "s/-.*$//")
+diff --git a/build/tools/merge_roco.sh b/build/tools/merge_roco.sh
+new file mode 100755
+index 0000000..cd0142a
+--- /dev/null
++++ b/build/tools/merge_roco.sh
+@@ -0,0 +1,101 @@
++#!/bin/bash
++if [ "$1" == "systemprop" ];then
++    if [ -e "$2" ];then
++        cp $2 "$2"_tmp
++        echo "" >> "$2"_tmp
++        cat ""$2"_tmp" | while read row;do
++            if [ ! -z "$row" ];then
++                KEY=`echo $row | awk -F"=" 'sub(/^[[:blank:]]*/,"",$2) {print $1}'`
++                VALUE=`echo $row | awk -F"=" 'sub(/^[[:blank:]]*/,"",$2) {print $2}'`
++                RET=`awk -F"=" '{if(/^'"$KEY"'/)print $1}' $3`
++                if [ ! -z "$RET" ];then 
++                    OLD_VALUE=`awk -F"=" 'sub(/^[[:blank:]]*/,"",$2) {if(/^'"$KEY"'/)print $2}' $3`
++                    if [ "$VALUE" != "$OLD_VALUE" ];then
++                        sed -i "/^$KEY/s/=.*/=$VALUE/g" $3; 
++                    fi
++                else
++		    echo >> $3	
++                    echo $row >> $3
++                fi 
++            fi
++        done
++        rm "$2"_tmp
++    fi
++elif [ "$1" == "logo" ];then
++	if [ -e out/target/product/$2/obj/BOOTLOADER_OBJ/build-$2/dev/logo ];then
++		rm -rf out/target/product/$2/obj/BOOTLOADER_OBJ/build-$2/dev/logo/*
++	fi
++elif [ "$1" == "defconfig" ];then
++	if [ -e "$2" ];then
++        cp $2 "$2"_tmp
++        echo "" >> "$2"_tmp
++        cat ""$2"_tmp" | while read row;do
++            if [ ! -z "$row" ];then
++                NUMBER=`echo $row | awk -F"=" '{if(!/^#/)print NF}'`
++                if [[ $NUMBER -gt 1 ]];then
++                    SET=`echo $row | awk -F"=" '{if(!/^#/)print}'`
++                    NEW=`echo $SET | awk -F"=" 'sub(/^[[:blank:]]*/,"",$1) {print $1}'`
++                    OLD=`grep -s "$NEW" $3`
++                    if [ ! -z "$OLD" ];then
++                        if [ "$NEW" != "$OLD" ];then
++                            sed -i "s/$OLD/$row/g" $3; 
++                        fi
++                    else
++                        echo "do nothing!"
++                    fi
++                else
++                    tmp=${row#*#}
++                    tmp=${tmp%%=*}
++                    KEY=`echo ${tmp%%is*} | sed 's/ //g'`
++                    OLD=`grep -s "$KEY" $3| awk '{if(!/^#/)print}'`
++                    MULTI=`echo $OLD | awk -F" " '{print NF}'`
++                    if [[ $MULTI -gt 1 ]];then
++                        for i in `echo $OLD | awk -F" " '{print}'`
++                        do
++                            tmp=`echo $i | awk -F"=" '{print $1}'`
++                            if [ $tmp = $KEY ];then
++                                OLD=$i
++                            fi
++                        done
++                    fi
++              
++                    if [ ! -z "$OLD" ];then
++                        sed -i "s/$OLD/$row/g" $3; 
++                    else
++                        echo
++                    fi
++                     
++                fi
++            fi
++        done
++        rm "$2"_tmp
++    fi
++elif [ "$1" == "log" ];then
++    if [ -e "$2" ];then
++        rm "$2"
++    else
++        mkdir -p ${2%/*}
++    fi
++    ALLPATH=${2%/*}
++    OUTPATH=${ALLPATH%%system*}
++    echo Build   Path: $PWD>> "$2"
++    echo Build Branch: `git branch | awk '{if(match($1,"*")){print $2}}'`>> "$2"
++    echo Build   Time: `date +%Y-%m-%d\ %H:%M` >>"$2"
++    echo Build Author:`whoami`>> "$2"
++    IP=`ifconfig eth0 |awk '/inet/ {split($2,x,":");print x[2]}'`
++    if [ "$IP" = "" ];then
++        IP=`ifconfig em0 |awk '/inet/ {split($2,x,":");print x[2]}'`
++    fi
++    if [ "$IP" = "" ];then
++        IP=`ifconfig em1 |awk '/inet/ {split($2,x,":");print x[2]}'`
++    fi
++    echo Build Server:"$IP">> "$2"
++    echo >>$2
++    echo >>$2
++    echo "$ALLPATH" >>$2
++    echo "$OUTPATH" >>$2
++    echo >>$2
++    git log >>$2
++    cp $OUTPATH*_Android_scatter.txt $ALLPATH
++fi
++
+diff --git a/device/mediatek/common/roco/common/Android.mk b/device/mediatek/common/roco/common/Android.mk
+new file mode 100755
+index 0000000..84b29b3
+--- /dev/null
++++ b/device/mediatek/common/roco/common/Android.mk
+@@ -0,0 +1,4 @@
++LOCAL_PATH:= $(call my-dir)
++$(shell awk 'BEGIN { cmd="cp -ri $(LOCAL_PATH)/* out/target/product/$(TARGET_DEVICE)/"; print "n" |cmd; }';)
++$(shell cp $(ANDROID_BUILD_TOP)/device/joya_sz/$(MTK_PROJECT)/roco/$(ROCO_PROJECT)/items*.ini $(ANDROID_PRODUCT_OUT)/)
++$(shell $(ANDROID_BUILD_TOP)/build/tools/merge_roco.sh log $(ANDROID_PRODUCT_OUT)/system/data/misc/git.log)
+\ No newline at end of file
+diff --git a/device/mediatek/common/roco/common/system/bin/busybox b/device/mediatek/common/roco/common/system/bin/busybox
+new file mode 100755
+index 0000000..0cf516b
+Binary files /dev/null and b/device/mediatek/common/roco/common/system/bin/busybox differ
+diff --git a/device/mediatek/common/roco/common/system/bin/preinstall.sh b/device/mediatek/common/roco/common/system/bin/preinstall.sh
+new file mode 100755
+index 0000000..25a05b9
+--- /dev/null
++++ b/device/mediatek/common/roco/common/system/bin/preinstall.sh
+@@ -0,0 +1,33 @@
++#!/system/bin/busybox sh
++
++echo "do preinstall job"
++BUSYBOX="/system/bin/busybox"
++
++if [ ! -e /data/data.notfirstrun ]; then
++	$BUSYBOX touch /data/data.notfirstrun
++	#write mac bt address to nvram
++    chown system /data/nvram/APCFG/APRDEB/BT_Addr
++	am startservice -n com.roco.autogen/com.roco.autogen.AutoGenAddr
++    #copy customer file to sdcard 
++    
++	while true
++	do
++		if [ -e /storage/sdcard0/DCIM ];then
++			if [ -e /system/extra/ ];then
++				$BUSYBOX cp -r  /system/extra/*  /storage/sdcard0/
++				break 
++			fi
++		fi
++	done
++
++	while true
++	do
++		if [ -e /storage/sdcard0/DCIM ];then
++			if [ -e /data/extra/ ];then
++				$BUSYBOX cp -r  /data/extra/*  /storage/sdcard0/
++				break 
++			fi	
++		fi	
++	done
++fi
++
+diff --git a/device/mediatek/common/roco/common/system/media/bootanimation.zip b/device/mediatek/common/roco/common/system/media/bootanimation.zip
+new file mode 100755
+index 0000000..a0f51d6
+Binary files /dev/null and b/device/mediatek/common/roco/common/system/media/bootanimation.zip differ
+diff --git a/kernel-3.18/scripts/drvgen/drvgen.mk b/kernel-3.18/scripts/drvgen/drvgen.mk
+old mode 100644
+new mode 100755
+index cdc4787..feb26c2
+--- a/kernel-3.18/scripts/drvgen/drvgen.mk
++++ b/kernel-3.18/scripts/drvgen/drvgen.mk
+@@ -14,7 +14,21 @@ export DRVGEN_OUT
+ 
+ ALL_DRVGEN_FILE := cust.dtsi
+ 
+-DWS_FILE := $(srctree)/$(DRVGEN_PATH)/codegen.dws
++#ROCO_ShiYouHui add for custom codegen.dws @2015-10-08 >>>
++ifneq ($(strip $(ROCO_PROJECT)),)
++	ROCO_DWS_FILE := $(srctree)/../device/joya_sz/$(MTK_PROJECT)/roco/$(ROCO_PROJECT)/codegen.dws
++$(info kernel roco dct file = $(ROCO_DWS_FILE))
++	ifeq ($(ROCO_DWS_FILE), $(wildcard $(ROCO_DWS_FILE)))
++	    DWS_FILE := $(ROCO_DWS_FILE)
++	else
++	    DWS_FILE := $(srctree)/$(DRVGEN_PATH)/codegen.dws
++	endif
++else
++	DWS_FILE := $(srctree)/$(DRVGEN_PATH)/codegen.dws
++endif
++$(info kernel real dct file = $(DWS_FILE))
++#ROCO_ShiYouHui add for custom codegen.dws @2015-10-08 <<<
++
+ ifneq ($(wildcard $(DWS_FILE)),)
+ DRVGEN_FILE_LIST := $(addprefix $(DRVGEN_OUT)/,$(ALL_DRVGEN_FILE))
+ else
+diff --git a/vendor/mediatek/proprietary/bootable/bootloader/lk/dev/logo/rules.mk b/vendor/mediatek/proprietary/bootable/bootloader/lk/dev/logo/rules.mk
+old mode 100644
+new mode 100755
+index 05cee65..b5069d4
+--- a/vendor/mediatek/proprietary/bootable/bootloader/lk/dev/logo/rules.mk
++++ b/vendor/mediatek/proprietary/bootable/bootloader/lk/dev/logo/rules.mk
+@@ -148,6 +148,12 @@ GENERATED += \
+             $(LOGO_IMAGE) \
+             $(addprefix $(BUILDDIR)/,$(RESOURCE_OBJ_LIST))
+ 
++#ROCO_ShiYouHui add for custom logo @2015-10-14 >>>
++ifneq ($(strip $(ROCO_PROJECT)),)
++	CUSTOM_UBOOT_LOGO_RESOURCE := $(PWD)/../../../../../../device/joya_sz/$(TARGET)/roco/$(ROCO_PROJECT)/logo/$(BOOT_LOGO)_uboot.bmp
++	CUSTOM_KERNEL_LOGO_RESOURCE := $(PWD)/../../../../../../device/joya_sz/$(TARGET)/roco/$(ROCO_PROJECT)/logo/$(BOOT_LOGO)_kernel.bmp
++endif
++#ROCO_ShiYouHui add for custom logo @2015-10-14 <<<
+ 
+ all:: $(LOGO_IMAGE) 
+ 
+@@ -168,4 +174,26 @@ $(BUILDDIR)/%.raw: %.bmp $(BMP_TO_RAW)
+ 	@$(MKDIR)
+ 	@echo "Compiling_BMP_TO_RAW $<"
+ 	$(BMP_TO_RAW) $@ $<
+-
++#ROCO_ShiYouHui add for custom logo @2015-10-14 >>>
++	@if [ ! -z $(CUSTOM_UBOOT_LOGO_RESOURCE) ];then \
++		if [ -e $(CUSTOM_UBOOT_LOGO_RESOURCE) ];then \
++			$(BMP_TO_RAW) $(BUILDDIR)/$(BOOT_LOGO_DIR)/$(BOOT_LOGO)/$(BOOT_LOGO)_uboot.raw $(CUSTOM_UBOOT_LOGO_RESOURCE); \
++		fi \
++	fi
++	@if [ ! -z $(CUSTOM_KERNEL_LOGO_RESOURCE) ];then \
++		if [ -e $(CUSTOM_KERNEL_LOGO_RESOURCE) ];then \
++			$(BMP_TO_RAW) $(BUILDDIR)/$(BOOT_LOGO_DIR)/$(BOOT_LOGO)/$(BOOT_LOGO)_kernel.raw $(CUSTOM_KERNEL_LOGO_RESOURCE); \
++		fi \
++	fi
++
++ifneq ($(strip $(ROCO_PROJECT)),)
++ifeq ($(CUSTOM_UBOOT_LOGO_RESOURCE), $(wildcard $(CUSTOM_UBOOT_LOGO_RESOURCE)))
++$(eval $(BUILDDIR)/$(BOOT_LOGO_DIR)/$(BASE_LOGO)/$(BASE_LOGO)_uboot.raw : $(CUSTOM_UBOOT_LOGO_RESOURCE) \
++	$(BMP_TO_RAW) $(BUILDDIR)/$(BOOT_LOGO_DIR)/$(BOOT_LOGO)/$(BOOT_LOGO)_uboot.raw $(CUSTOM_UBOOT_LOGO_RESOURCE))
++endif
++ifeq ($(CUSTOM_KERNEL_LOGO_RESOURCE), $(wildcard $(CUSTOM_KERNEL_LOGO_RESOURCE)))
++$(eval $(BUILDDIR)/$(BOOT_LOGO_DIR)/$(BASE_LOGO)/$(BASE_LOGO)_kernel.raw : $(CUSTOM_KERNEL_LOGO_RESOURCE) \
++	$(BMP_TO_RAW) $(BUILDDIR)/$(BOOT_LOGO_DIR)/$(BOOT_LOGO)/$(BOOT_LOGO)_kernel.raw $(CUSTOM_KERNEL_LOGO_RESOURCE))
++endif
++endif
++#ROCO_ShiYouHui add for custom logo @2015-10-14 <<<
+\ No newline at end of file
+diff --git a/vendor/mediatek/proprietary/bootable/bootloader/lk/scripts/drvgen/drvgen.mk b/vendor/mediatek/proprietary/bootable/bootloader/lk/scripts/drvgen/drvgen.mk
+old mode 100644
+new mode 100755
+index a62b622..4b84861
+--- a/vendor/mediatek/proprietary/bootable/bootloader/lk/scripts/drvgen/drvgen.mk
++++ b/vendor/mediatek/proprietary/bootable/bootloader/lk/scripts/drvgen/drvgen.mk
+@@ -87,7 +87,20 @@ DRVGEN_TOOL := $(PWD)/scripts/dct/DrvGen.darwin
+ else
+ DRVGEN_TOOL := $(PWD)/scripts/dct/DrvGen
+ endif
+-DWS_FILE := $(PWD)/target/$(TARGET)/dct/$(if $(CUSTOM_KERNEL_DCT),$(CUSTOM_KERNEL_DCT),dct)/codegen.dws
++#ROCO_ShiYouHui add for custom codegen.dws @2015-10-08 >>>
++ifneq ($(strip $(ROCO_PROJECT)),)
++	ROCO_DWS_FILE := $(PWD)/../../../../../../device/joya_sz/$(TARGET)/roco/$(ROCO_PROJECT)/codegen.dws
++$(info lk ROCO_DWS_FILE = $(ROCO_DWS_FILE))
++	ifeq ($(ROCO_DWS_FILE), $(wildcard $(ROCO_DWS_FILE)))
++	    DWS_FILE := $(ROCO_DWS_FILE)
++	else
++	    DWS_FILE := $(PWD)/target/$(TARGET)/dct/$(if $(CUSTOM_KERNEL_DCT),$(CUSTOM_KERNEL_DCT),dct)/codegen.dws
++	endif
++else
++	DWS_FILE := $(PWD)/target/$(TARGET)/dct/$(if $(CUSTOM_KERNEL_DCT),$(CUSTOM_KERNEL_DCT),dct)/codegen.dws
++endif
++$(info lk real DWS_FILE = $(DWS_FILE))
++#ROCO_ShiYouHui add for custom codegen.dws @2015-10-08 <<<
+ DRVGEN_PREBUILT_PATH := $(PWD)/target/$(TARGET)
+ DRVGEN_PREBUILT_CHECK := $(filter-out $(wildcard $(addprefix $(DRVGEN_PREBUILT_PATH)/,$(ALL_DRVGEN_FILE))),$(addprefix $(DRVGEN_PREBUILT_PATH)/,$(ALL_DRVGEN_FILE)))
+ 
+diff --git a/vendor/mediatek/proprietary/bootable/bootloader/preloader/tools/drvgen/drvgen.mk b/vendor/mediatek/proprietary/bootable/bootloader/preloader/tools/drvgen/drvgen.mk
+old mode 100644
+new mode 100755
+index 26dd3c7..26657b1
+--- a/vendor/mediatek/proprietary/bootable/bootloader/preloader/tools/drvgen/drvgen.mk
++++ b/vendor/mediatek/proprietary/bootable/bootloader/preloader/tools/drvgen/drvgen.mk
+@@ -87,7 +87,20 @@ DRVGEN_TOOL := $(D_ROOT)/tools/dct/DrvGen.darwin
+ else
+ DRVGEN_TOOL := $(D_ROOT)/tools/dct/DrvGen
+ endif
+-DWS_FILE := $(MTK_PATH_CUSTOM)/dct/$(if $(CUSTOM_KERNEL_DCT),$(CUSTOM_KERNEL_DCT),dct)/codegen.dws
++#ROCO_ShiYouHui add for custom codegen.dws @2015-10-08 >>>
++ifneq ($(strip $(ROCO_PROJECT)),)
++	ROCO_DWS_FILE := $(PWD)/../../../../../../device/joya_sz/$(TARGET)/roco/$(ROCO_PROJECT)/codegen.dws
++$(info pl ROCO_DWS_FILE = $(ROCO_DWS_FILE))
++	ifeq ($(ROCO_DWS_FILE), $(wildcard $(ROCO_DWS_FILE)))
++	    DWS_FILE := $(ROCO_DWS_FILE)
++	else
++	    DWS_FILE := $(MTK_PATH_CUSTOM)/dct/$(if $(CUSTOM_KERNEL_DCT),$(CUSTOM_KERNEL_DCT),dct)/codegen.dws
++	endif
++else
++	DWS_FILE := $(MTK_PATH_CUSTOM)/dct/$(if $(CUSTOM_KERNEL_DCT),$(CUSTOM_KERNEL_DCT),dct)/codegen.dws
++endif
++$(info pl real DWS_FILE = $(DWS_FILE))
++#ROCO_ShiYouHui add for custom codegen.dws @2015-10-08 <<<
+ DRVGEN_PREBUILT_PATH := $(MTK_PATH_CUSTOM)
+ DRVGEN_PREBUILT_CHECK := $(filter-out $(wildcard $(addprefix $(DRVGEN_PREBUILT_PATH)/,$(ALL_DRVGEN_FILE))),$(addprefix $(DRVGEN_PREBUILT_PATH)/,$(ALL_DRVGEN_FILE)))
+ 
+diff --git a/vendor/mediatek/proprietary/bootable/bootloader/preloader/tools/emigen/emigen.mk b/vendor/mediatek/proprietary/bootable/bootloader/preloader/tools/emigen/emigen.mk
+index b77a851..daef402 100755
+--- a/vendor/mediatek/proprietary/bootable/bootloader/preloader/tools/emigen/emigen.mk
++++ b/vendor/mediatek/proprietary/bootable/bootloader/preloader/tools/emigen/emigen.mk
+@@ -13,7 +13,20 @@ ALL_EMIGEN_FILE += \
+ endif
+ 
+ EMIGEN_FILE_LIST := $(addprefix $(EMIGEN_OUT)/,$(ALL_EMIGEN_FILE))
+-CUSTOM_MEMORY_HDR := $(MTK_PATH_CUSTOM)/inc/custom_MemoryDevice.h
++#ROCO_ShiYouHui add for custom custom_MemoryDevice.h @2015-10-08 >>>
++ifneq ($(strip $(ROCO_PROJECT)),)
++	ROCO_MEMORY_HDR := $(D_ROOT)/../../../../../../device/joya_sz/$(TARGET)/roco/$(ROCO_PROJECT)/custom_MemoryDevice.h
++$(info ddr ROCO_MEMORY_DDR = $(ROCO_MEMORY_HDR))
++	ifeq ($(ROCO_MEMORY_HDR), $(wildcard $(ROCO_MEMORY_HDR)))
++	    CUSTOM_MEMORY_HDR := $(ROCO_MEMORY_HDR)
++	else
++	    CUSTOM_MEMORY_HDR := $(MTK_PATH_CUSTOM)/inc/custom_MemoryDevice.h
++	endif
++else
++	CUSTOM_MEMORY_HDR := $(MTK_PATH_CUSTOM)/inc/custom_MemoryDevice.h
++endif
++$(info ddr real CUSTOM_MEMORY_HDR = $(CUSTOM_MEMORY_HDR))
++#ROCO_ShiYouHui add for custom custom_MemoryDevice.h @2015-10-08 <<<
+ ifeq ($(MACH_TYPE),mt6735m)
+ MEMORY_DEVICE_XLS := $(D_ROOT)/tools/emigen/MT6735/MemoryDeviceList_MT6735M.xls
+ else ifeq ($(MACH_TYPE),mt6753)
