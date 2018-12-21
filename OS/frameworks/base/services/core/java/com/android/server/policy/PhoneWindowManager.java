@@ -813,6 +813,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     ShortcutManager mShortcutManager;
     PowerManager.WakeLock mBroadcastWakeLock;
     PowerManager.WakeLock mPowerKeyWakeLock;
+	PowerManager.WakeLock mLightDimWakeLock = null;
     boolean mHavePendingMediaKeyRepeatWithWakeLock;
 
     private int mCurrentUserId;
@@ -866,11 +867,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 	static final int LCD_STATE_WAKE = 3;
 	static final int LCD_STATE_IDLE = 4;
 	static final int LCD_DIM_TIME = 3000;
-	private	int lcm_state = LCD_STATE_ON;
+	private	int lcm_state = LCD_STATE_IDLE;
 	private int light_dim_time = 0;
-	private int lcd_last_brightness = 0;
-	private int lcd_last_brightness_mode = 0;
+	//private int lcd_last_brightness = 0;
+	//private int lcd_last_brightness_mode = 0;
 	private long lastNans = 0;
+	private int mLightdimEnable = 0;
+	private int mLightdimDelay = 0;
 
 	private void setBrightnessValues(int values)
 	{
@@ -1027,24 +1030,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 					if(mPowerManager.isScreenOn()) {
 						Slog.d(TAG, "LCD goto dim");
 						lcm_state = LCD_STATE_DIM;
-						lcd_last_brightness_mode = Settings.System.getIntForUser(
-						        mContext.getContentResolver(),
-						        Settings.System.SCREEN_BRIGHTNESS_MODE,
-						        Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
-						        UserHandle.USER_CURRENT_OR_SELF);
-						if (lcd_last_brightness_mode != 0) {
-						    Settings.System.putIntForUser(mContext.getContentResolver(),
-						            Settings.System.SCREEN_BRIGHTNESS_MODE,
-						            Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
-						            UserHandle.USER_CURRENT_OR_SELF);
-						}
-						lcd_last_brightness = Settings.System.getIntForUser(mContext.getContentResolver(),
-	                        Settings.System.SCREEN_BRIGHTNESS,
-	                        mPowerManager.getDefaultScreenBrightnessSetting(),
-	                        UserHandle.USER_CURRENT_OR_SELF);
-						Slog.d(TAG, "lcd_last_brightness_mode: " + lcd_last_brightness_mode + ", lcd_last_brightness: " + lcd_last_brightness);
 						//mPowerManager.setBacklightBrightness(0);
-						mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager(0);
+						mPowerManagerInternal.setScreenBrightnessOverrideFromLightDim(0);
 						mHandler.removeMessages(MSG_TURN_OFF_LCD2);
 						mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD2, LCD_DIM_TIME);
 					}
@@ -1107,6 +1094,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.Global.getUriFor(
                     Settings.Global.POLICY_CONTROL), false, this,
+                    UserHandle.USER_ALL);
+			resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.LIGHTDIM_ONOFF), false, this,
+                    UserHandle.USER_ALL);
+			resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.LIGHTDIM_SETTING), false, this,
                     UserHandle.USER_ALL);
             updateSettings();
         }
@@ -2095,6 +2088,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 "PhoneWindowManager.mBroadcastWakeLock");
         mPowerKeyWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 "PhoneWindowManager.mPowerKeyWakeLock");
+		mLightDimWakeLock = mPowerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK,
+                "PhoneWindowManager.mLightDimWakeLock");
         mEnableShiftMenuBugReports = "1".equals(SystemProperties.get("ro.debuggable"));
         mSupportAutoRotation = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_supportAutoRotation);
@@ -2451,6 +2446,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
+	private void updateLightDimSettings() {
+		if(mLightdimEnable == 0) {
+            setLightDim(0);
+			if (mLightDimWakeLock.isHeld()) {
+				mLightDimWakeLock.release();
+			}
+        } else if(mLightdimEnable == 1) {
+            setLightDim(mLightdimDelay);
+			if (!mLightDimWakeLock.isHeld()) {
+				mLightDimWakeLock.acquire();
+			}
+		}
+	}
+
     public void updateSettings() {
         ContentResolver resolver = mContext.getContentResolver();
         boolean updateRotation = false;
@@ -2522,11 +2531,23 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 				Settings.System.LIGHTDIM_ONOFF, 0, UserHandle.USER_CURRENT);
             int lightdim_delay = Settings.System.getIntForUser(resolver,
 				Settings.System.LIGHTDIM_SETTING, 0, UserHandle.USER_CURRENT);
-            if(lightdim_enable == 0) {
-                setLightDim(0);
-            } else if(lightdim_enable == 1) {
-                setLightDim(lightdim_delay);
-            }
+			if(mSystemBooted) {
+				if(lightdim_enable != mLightdimEnable) {
+					mLightdimEnable = lightdim_enable;
+					updateLightDimSettings();
+				}
+				if(lightdim_delay != mLightdimDelay) {
+					mLightdimDelay = lightdim_delay;
+					updateLightDimSettings();
+				}
+			} else {
+				if(lightdim_enable != mLightdimEnable) {
+					mLightdimEnable = lightdim_enable;
+				}
+				if(lightdim_delay != mLightdimDelay) {
+					mLightdimDelay = lightdim_delay;
+				}
+			}
         }
         synchronized (mWindowManagerFuncs.getWindowManagerLock()) {
             PolicyControl.reloadFromSetting(mContext);
@@ -6425,13 +6446,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 					if (down) {
 	                    //setBrightnessValues(lcd_last_brightness);
 						//mPowerManager.setBacklightBrightness(lcd_last_brightness);
-						mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager(lcd_last_brightness);
-						if (lcd_last_brightness_mode != 0) {
-							Settings.System.putIntForUser(mContext.getContentResolver(),
-									Settings.System.SCREEN_BRIGHTNESS_MODE,
-									Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC,
-									UserHandle.USER_CURRENT_OR_SELF);
-						}
+						mPowerManagerInternal.setScreenBrightnessOverrideFromLightDim(-1);
 						mHandler.removeMessages(MSG_TURN_OFF_LCD);
 						mHandler.removeMessages(MSG_TURN_OFF_LCD2);
 						mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
@@ -6699,13 +6714,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			lastNans = whenNanos;
 			lcm_state = LCD_STATE_ON;
 			//mPowerManager.setBacklightBrightness(lcd_last_brightness);
-			mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager(lcd_last_brightness);
-			if (lcd_last_brightness_mode != 0) {
-				Settings.System.putIntForUser(mContext.getContentResolver(),
-						Settings.System.SCREEN_BRIGHTNESS_MODE,
-						Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC,
-						UserHandle.USER_CURRENT_OR_SELF);
-			}
+			mPowerManagerInternal.setScreenBrightnessOverrideFromLightDim(-1);
 			mHandler.removeMessages(MSG_TURN_OFF_LCD);
 			mHandler.removeMessages(MSG_TURN_OFF_LCD2);
 			mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
@@ -6714,13 +6723,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 			lastNans = whenNanos;
 			lcm_state = LCD_STATE_WAKE;
 			//mPowerManager.setBacklightBrightness(lcd_last_brightness);
-			mPowerManagerInternal.setScreenBrightnessOverrideFromWindowManager(lcd_last_brightness);
-			if (lcd_last_brightness_mode != 0) {
-				Settings.System.putIntForUser(mContext.getContentResolver(),
-						Settings.System.SCREEN_BRIGHTNESS_MODE,
-						Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC,
-						UserHandle.USER_CURRENT_OR_SELF);
-			}
+			mPowerManagerInternal.setScreenBrightnessOverrideFromLightDim(-1);
 			mHandler.removeMessages(MSG_TURN_OFF_LCD);
 			mHandler.removeMessages(MSG_TURN_OFF_LCD2);
 			mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
@@ -7755,6 +7758,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         startedWakingUp();
         screenTurningOn(null);
         screenTurnedOn();
+		Slog.d(TAG, "PhoneWindowManager:systemBooted");
+		if(mLightdimEnable == 1) {
+			updateLightDimSettings();
+		}
     }
 
     @Override

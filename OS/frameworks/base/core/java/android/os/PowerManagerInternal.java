@@ -85,6 +85,7 @@ public abstract class PowerManagerInternal {
      * @param brightness The overridden brightness, or -1 to disable the override.
      */
     public abstract void setScreenBrightnessOverrideFromWindowManager(int brightness);
+	public abstract void setScreenBrightnessOverrideFromLightDim(int brightness);
 
     /**
      * Used by the window manager to override the user activity timeout based on the

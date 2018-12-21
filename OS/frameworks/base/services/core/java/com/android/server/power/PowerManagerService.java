@@ -477,6 +477,7 @@ public final class PowerManagerService extends SystemService
     // to allow the current foreground activity to override the brightness.
     // Use -1 to disable.
     private int mScreenBrightnessOverrideFromWindowManager = -1;
+	private int mScreenBrightnessOverrideFromLightDim = -1;
 
     // The window manager has determined the user to be inactive via other means.
     // Set this to false to disable.
@@ -2341,6 +2342,10 @@ public final class PowerManagerService extends SystemService
             } else if (mIsVrModeEnabled) {
                 screenBrightness = mScreenBrightnessForVrSetting;
                 autoBrightness = false;
+            } else if(isValidBrightness(mScreenBrightnessOverrideFromLightDim)) {
+                screenBrightness = mScreenBrightnessOverrideFromLightDim;
+                autoBrightness = false;
+                brightnessSetByUser = false;
             } else if (isValidBrightness(mScreenBrightnessOverrideFromWindowManager)) {
                 screenBrightness = mScreenBrightnessOverrideFromWindowManager;
                 autoBrightness = false;
@@ -2406,7 +2411,8 @@ public final class PowerManagerService extends SystemService
                         + ", mBootCompleted=" + mBootCompleted
                         + ", mScreenBrightnessBoostInProgress=" + mScreenBrightnessBoostInProgress
                         + ", mIsVrModeEnabled= " + mIsVrModeEnabled
-                        + ", sQuiescent=" + sQuiescent);
+                        + ", sQuiescent=" + sQuiescent
+                        + ", mScreenBrightnessOverrideFromLightDim=" + mScreenBrightnessOverrideFromLightDim);
             }
         }
         return mDisplayReady && !oldDisplayReady;
@@ -3074,6 +3080,16 @@ public final class PowerManagerService extends SystemService
         synchronized (mLock) {
             if (mScreenBrightnessOverrideFromWindowManager != brightness) {
                 mScreenBrightnessOverrideFromWindowManager = brightness;
+                mDirty |= DIRTY_SETTINGS;
+                updatePowerStateLocked();
+            }
+        }
+    }
+
+	private void setScreenBrightnessOverrideFromLightDimInternal(int brightness) {
+        synchronized (mLock) {
+            if (mScreenBrightnessOverrideFromLightDim != brightness) {
+                mScreenBrightnessOverrideFromLightDim = brightness;
                 mDirty |= DIRTY_SETTINGS;
                 updatePowerStateLocked();
             }
@@ -4681,6 +4697,15 @@ public final class PowerManagerService extends SystemService
                 screenBrightness = PowerManager.BRIGHTNESS_DEFAULT;
             }
             setScreenBrightnessOverrideFromWindowManagerInternal(screenBrightness);
+        }
+
+		@Override
+        public void setScreenBrightnessOverrideFromLightDim(int screenBrightness) {
+            if (screenBrightness < PowerManager.BRIGHTNESS_DEFAULT
+                    || screenBrightness > PowerManager.BRIGHTNESS_ON) {
+                screenBrightness = PowerManager.BRIGHTNESS_DEFAULT;
+            }
+            setScreenBrightnessOverrideFromLightDimInternal(screenBrightness);
         }
 
         @Override
