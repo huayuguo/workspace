@@ -1,0 +1,52 @@
+SystemServiceRegistry.java
+registerService(Context.POWER_SERVICE, PowerManager.class,
+		new CachedServiceFetcher<PowerManager>() {
+	@Override
+	public PowerManager createService(ContextImpl ctx) throws ServiceNotFoundException {
+		IBinder b = ServiceManager.getServiceOrThrow(Context.POWER_SERVICE);
+		IPowerManager service = IPowerManager.Stub.asInterface(b);
+		return new PowerManager(ctx.getOuterContext(),
+				service, ctx.mMainThread.getHandler());
+	}});
+
+CachedServiceFetcher类用于保存服务的引用：
+public static abstract class CachedServiceFetcher<T> implements ServiceFetcher<T> {
+	private final int mCacheIndex;
+
+	public CachedServiceFetcher() {
+		mCacheIndex = sServiceCacheSize++;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public final T getService(ContextImpl ctx) {
+		final Object[] cache = ctx.mServiceCache;
+		synchronized (cache) {
+			// Fetch or create the service.
+			Object service = cache[mCacheIndex];
+			if (service == null) {
+				try {
+					service = createService(ctx);
+					cache[mCacheIndex] = service;
+				} catch (ServiceNotFoundException e) {
+					onServiceNotFound(e);
+				}
+			}
+			return (T)service;
+		}
+	}
+
+	public abstract T createService(ContextImpl ctx) throws ServiceNotFoundException;
+}
+
+registerService函数将服务的引用保存到哈希表：
+private static <T> void registerService(String serviceName, Class<T> serviceClass,
+		ServiceFetcher<T> serviceFetcher) {
+	SYSTEM_SERVICE_NAMES.put(serviceClass, serviceName);
+	SYSTEM_SERVICE_FETCHERS.put(serviceName, serviceFetcher);
+}
+
+getSystemService函数从哈希表中取出服务：
+public static String getSystemServiceName(Class<?> serviceClass) {
+	return SYSTEM_SERVICE_NAMES.get(serviceClass);
+}
