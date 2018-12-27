@@ -25,7 +25,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFn6Y6PD2Dc49Y="
 							},
-							"name": "SequenceDiagram1",
+							"name": "PowerManagerService 注册流程图",
 							"ownedViews": [
 								{
 									"_type": "UMLFrameView",
@@ -46,9 +46,9 @@
 											"font": "Arial;13;0",
 											"left": 102.97900390625,
 											"top": 5,
-											"width": 115.9052734375,
+											"width": 201.1162109375,
 											"height": 13,
-											"text": "SequenceDiagram1"
+											"text": "PowerManagerService 注册流程图"
 										},
 										{
 											"_type": "LabelView",
@@ -568,9 +568,9 @@
 													"font": "Arial;13;1",
 													"left": 293,
 													"top": 47,
-													"width": 148.734375,
+													"width": 155.970703125,
 													"height": 13,
-													"text": "PowerManagerService"
+													"text": "SystemServiceManager"
 												},
 												{
 													"_type": "LabelView",
@@ -603,7 +603,7 @@
 											"font": "Arial;13;0",
 											"left": 288,
 											"top": 40,
-											"width": 158.734375,
+											"width": 165.970703125,
 											"height": 40,
 											"stereotypeLabel": {
 												"$ref": "AAAAAAFn6ZIMHGF4P9g="
@@ -628,7 +628,7 @@
 												"$ref": "AAAAAAFn6ZIMG2F1A8A="
 											},
 											"font": "Arial;13;0",
-											"left": 367,
+											"left": 371,
 											"top": 80,
 											"width": 1,
 											"height": 641
@@ -637,7 +637,7 @@
 									"font": "Arial;13;0",
 									"left": 288,
 									"top": 40,
-									"width": 158.734375,
+									"width": 165.970703125,
 									"height": 681,
 									"nameCompartment": {
 										"$ref": "AAAAAAFn6ZIMHGF3/bI="
@@ -666,7 +666,7 @@
 												"$ref": "AAAAAAFn6ZLQ4WGVrWA="
 											},
 											"font": "Arial;13;0",
-											"left": 221,
+											"left": 223,
 											"top": 234,
 											"width": 86.6962890625,
 											"height": 13,
@@ -689,7 +689,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 264,
+											"left": 266,
 											"top": 219,
 											"height": 13,
 											"alpha": 1.5707963267948966,
@@ -710,7 +710,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 264,
+											"left": 266,
 											"top": 254,
 											"height": 13,
 											"alpha": -1.5707963267948966,
@@ -730,7 +730,7 @@
 												"$ref": "AAAAAAFn6ZLQ4WGVrWA="
 											},
 											"font": "Arial;13;0",
-											"left": 360,
+											"left": 364,
 											"top": 250,
 											"width": 14,
 											"height": 295
@@ -743,7 +743,7 @@
 									"tail": {
 										"$ref": "AAAAAAFn6Y7/G2D2iYk="
 									},
-									"points": "169:250;360:250",
+									"points": "169:250;364:250",
 									"nameLabel": {
 										"$ref": "AAAAAAFn6ZLQ4mGX6NM="
 									},
@@ -1015,7 +1015,7 @@
 												"$ref": "AAAAAAFn6aukR2IHTSM="
 											},
 											"font": "Arial;13;0",
-											"left": 447,
+											"left": 449,
 											"top": 264,
 											"width": 78.04443359375,
 											"height": 13,
@@ -1038,7 +1038,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 486,
+											"left": 488,
 											"top": 249,
 											"height": 13,
 											"alpha": 1.5707963267948966,
@@ -1059,7 +1059,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 486,
+											"left": 488,
 											"top": 284,
 											"height": 13,
 											"alpha": -1.5707963267948966,
@@ -1092,7 +1092,7 @@
 									"tail": {
 										"$ref": "AAAAAAFn6ZIMHGF8src="
 									},
-									"points": "373:280;600:280",
+									"points": "377:280;600:280",
 									"nameLabel": {
 										"$ref": "AAAAAAFn6aukSWIJzKk="
 									},
@@ -1348,9 +1348,9 @@
 												"$ref": "AAAAAAFn6eaNfWNTe3g="
 											},
 											"font": "Arial;13;0",
-											"left": 888,
+											"left": 887,
 											"top": 364,
-											"width": 41.91357421875,
+											"width": 42,
 											"height": 13,
 											"alpha": 1.5707963267948966,
 											"distance": 10,
@@ -1460,9 +1460,9 @@
 												"$ref": "AAAAAAFn6a7NmGJni7s="
 											},
 											"font": "Arial;13;0",
-											"left": 690,
+											"left": 689,
 											"top": 372,
-											"width": 41.91357421875,
+											"width": 42,
 											"height": 13,
 											"alpha": 1.5707963267948966,
 											"distance": 10,
@@ -2256,7 +2256,7 @@
 												"$ref": "AAAAAAFn6bC6GmLe+Co="
 											},
 											"font": "Arial;13;0",
-											"left": 461,
+											"left": 463,
 											"top": 516,
 											"width": 49.1435546875,
 											"height": 13,
@@ -2279,7 +2279,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 485,
+											"left": 487,
 											"top": 531,
 											"height": 13,
 											"alpha": 1.5707963267948966,
@@ -2300,7 +2300,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 486,
+											"left": 488,
 											"top": 496,
 											"height": 13,
 											"alpha": -1.5707963267948966,
@@ -2321,7 +2321,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 360,
+											"left": 364,
 											"top": 512,
 											"width": 14,
 											"height": 25
@@ -2334,7 +2334,7 @@
 									"tail": {
 										"$ref": "AAAAAAFn6asQMWHtYqg="
 									},
-									"points": "600:512;373:512",
+									"points": "600:512;377:512",
 									"nameLabel": {
 										"$ref": "AAAAAAFn6bC6GmLgidg="
 									},
@@ -2368,7 +2368,7 @@
 												"$ref": "AAAAAAFn6bDnN2L0snI="
 											},
 											"font": "Arial;13;0",
-											"left": 239,
+											"left": 241,
 											"top": 532,
 											"width": 49.1435546875,
 											"height": 13,
@@ -2391,7 +2391,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 263,
+											"left": 265,
 											"top": 547,
 											"height": 13,
 											"alpha": 1.5707963267948966,
@@ -2412,7 +2412,7 @@
 											},
 											"visible": false,
 											"font": "Arial;13;0",
-											"left": 264,
+											"left": 266,
 											"top": 512,
 											"height": 13,
 											"alpha": -1.5707963267948966,
@@ -2446,7 +2446,7 @@
 									"tail": {
 										"$ref": "AAAAAAFn6ZIMHGF8src="
 									},
-									"points": "360:528;169:528",
+									"points": "364:528;169:528",
 									"nameLabel": {
 										"$ref": "AAAAAAFn6bDnN2L2S/Q="
 									},
@@ -2700,7 +2700,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFn6Y6PD2Dc49Y="
 							},
-							"name": "PowerManagerService",
+							"name": "SystemServiceManager",
 							"represent": {
 								"$ref": "AAAAAAFn6ZIMG2F07Rk="
 							},
@@ -2764,7 +2764,8 @@
 					"_parent": {
 						"$ref": "AAAAAAFn6Y6PDmDblaA="
 					},
-					"name": "Role1"
+					"name": "Role1",
+					"type": ""
 				},
 				{
 					"_type": "UMLAttribute",
@@ -2772,7 +2773,8 @@
 					"_parent": {
 						"$ref": "AAAAAAFn6Y6PDmDblaA="
 					},
-					"name": "Role2"
+					"name": "Role2",
+					"type": ""
 				},
 				{
 					"_type": "UMLAttribute",
@@ -2780,7 +2782,8 @@
 					"_parent": {
 						"$ref": "AAAAAAFn6Y6PDmDblaA="
 					},
-					"name": "Role3"
+					"name": "Role3",
+					"type": ""
 				},
 				{
 					"_type": "UMLAttribute",
@@ -2788,7 +2791,8 @@
 					"_parent": {
 						"$ref": "AAAAAAFn6Y6PDmDblaA="
 					},
-					"name": "Role4"
+					"name": "Role4",
+					"type": ""
 				},
 				{
 					"_type": "UMLAttribute",
@@ -2796,7 +2800,8 @@
 					"_parent": {
 						"$ref": "AAAAAAFn6Y6PDmDblaA="
 					},
-					"name": "Role5"
+					"name": "Role5",
+					"type": ""
 				},
 				{
 					"_type": "UMLAttribute",
@@ -2804,7 +2809,8 @@
 					"_parent": {
 						"$ref": "AAAAAAFn6Y6PDmDblaA="
 					},
-					"name": "Role6"
+					"name": "Role6",
+					"type": ""
 				}
 			]
 		}
