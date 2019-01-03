@@ -749,7 +749,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         // provide a nominal default value for the case where auto-brightness
         // is not ready yet.
         if (brightness < 0) {
-            brightness = clampScreenBrightness(mPowerRequest.screenBrightness);
+			if(mPowerRequest.brightnessSetByLightDim) {
+				brightness = mPowerRequest.screenBrightness;
+			} else {
+				brightness = clampScreenBrightness(mPowerRequest.screenBrightness);
+			}
         }
 
         // Apply dimming by at least some minimum amount when user activity
@@ -811,7 +815,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             if ((state == Display.STATE_ON
                     && mSkipRampState == RAMP_STATE_SKIP_NONE
                     || state == Display.STATE_DOZE && !mBrightnessBucketsInDozeConfig)
-                    && !wasOrWillBeInVr) {
+                    && !wasOrWillBeInVr && (!mPowerRequest.brightnessSetByLightDim || brightness != 0)) {
                 animateScreenBrightness(brightness,
                         slowChange ? mBrightnessRampRateSlow : mBrightnessRampRateFast);
             } else {

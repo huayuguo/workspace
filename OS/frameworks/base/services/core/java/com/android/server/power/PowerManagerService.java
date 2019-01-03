@@ -2334,6 +2334,7 @@ public final class PowerManagerService extends SystemService
             float screenAutoBrightnessAdjustment = 0.0f;
             boolean autoBrightness = (mScreenBrightnessModeSetting ==
                     Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+			boolean brightnessSetByLightDim = false;
             if (!mBootCompleted) {
                 // Keep the brightness steady during boot. This requires the
                 // bootloader brightness and the default brightness to be identical.
@@ -2342,10 +2343,11 @@ public final class PowerManagerService extends SystemService
             } else if (mIsVrModeEnabled) {
                 screenBrightness = mScreenBrightnessForVrSetting;
                 autoBrightness = false;
-            } else if(isValidBrightness(mScreenBrightnessOverrideFromLightDim)) {
+            } else if (isValidBrightness(mScreenBrightnessOverrideFromLightDim)) {
                 screenBrightness = mScreenBrightnessOverrideFromLightDim;
                 autoBrightness = false;
                 brightnessSetByUser = false;
+				brightnessSetByLightDim = true;
             } else if (isValidBrightness(mScreenBrightnessOverrideFromWindowManager)) {
                 screenBrightness = mScreenBrightnessOverrideFromWindowManager;
                 autoBrightness = false;
@@ -2366,10 +2368,13 @@ public final class PowerManagerService extends SystemService
                     screenAutoBrightnessAdjustment = mScreenAutoBrightnessAdjustmentSetting;
                 }
             }
-            screenBrightness = Math.max(Math.min(screenBrightness,
-                    mScreenBrightnessSettingMaximum), mScreenBrightnessSettingMinimum);
-            screenAutoBrightnessAdjustment = Math.max(Math.min(
-                    screenAutoBrightnessAdjustment, 1.0f), -1.0f);
+
+			if (!brightnessSetByLightDim) {
+	            screenBrightness = Math.max(Math.min(screenBrightness,
+	                    mScreenBrightnessSettingMaximum), mScreenBrightnessSettingMinimum);
+	            screenAutoBrightnessAdjustment = Math.max(Math.min(
+	                    screenAutoBrightnessAdjustment, 1.0f), -1.0f);
+			}
 
             // Update display power request.
             mDisplayPowerRequest.screenBrightness = screenBrightness;
@@ -2379,6 +2384,7 @@ public final class PowerManagerService extends SystemService
             mDisplayPowerRequest.useAutoBrightness = autoBrightness;
             mDisplayPowerRequest.useProximitySensor = shouldUseProximitySensorLocked();
             mDisplayPowerRequest.boostScreenBrightness = shouldBoostScreenBrightness();
+			mDisplayPowerRequest.brightnessSetByLightDim = brightnessSetByLightDim;
 
             updatePowerRequestFromBatterySaverPolicy(mDisplayPowerRequest);
 

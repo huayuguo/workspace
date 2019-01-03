@@ -1031,7 +1031,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 						Slog.d(TAG, "LCD goto dim");
 						lcm_state = LCD_STATE_DIM;
 						//mPowerManager.setBacklightBrightness(0);
-						mPowerManagerInternal.setScreenBrightnessOverrideFromLightDim(0);
+						mPowerManagerInternal.setScreenBrightnessOverrideFromLightDim(mPowerManager.getMinimumScreenBrightnessSetting());
 						mHandler.removeMessages(MSG_TURN_OFF_LCD2);
 						mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD2, LCD_DIM_TIME);
 					}
@@ -1040,7 +1040,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 					if(mPowerManager.isScreenOn()) {
 						Slog.d(TAG, "LCD turn off");
 						lcm_state = LCD_STATE_OFF;
-						setBrightnessValues(0);
+						mPowerManagerInternal.setScreenBrightnessOverrideFromLightDim(0);
+						//setBrightnessValues(0);
 					}
 					break;
             }
@@ -7149,6 +7150,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 		if(light_dim_time > 0) {
 			mHandler.sendEmptyMessageDelayed(MSG_TURN_OFF_LCD, light_dim_time);
 			lcm_state = LCD_STATE_ON;
+			mPowerManagerInternal.setScreenBrightnessOverrideFromLightDim(-1);
 		}
 		//mContext.getContentResolver().notifyChange(Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS), null);
 

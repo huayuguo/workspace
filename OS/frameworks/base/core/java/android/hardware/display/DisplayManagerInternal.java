@@ -244,6 +244,8 @@ public abstract class DisplayManagerInternal {
         public int dozeScreenBrightness;
         public int dozeScreenState;
 
+		public boolean brightnessSetByLightDim;
+
         public DisplayPowerRequest() {
             policy = POLICY_BRIGHT;
             useProximitySensor = false;
@@ -281,6 +283,7 @@ public abstract class DisplayManagerInternal {
             boostScreenBrightness = other.boostScreenBrightness;
             dozeScreenBrightness = other.dozeScreenBrightness;
             dozeScreenState = other.dozeScreenState;
+			brightnessSetByLightDim = other.brightnessSetByLightDim;
         }
 
         @Override
@@ -324,7 +327,8 @@ public abstract class DisplayManagerInternal {
                     + ", lowPowerMode=" + lowPowerMode
                     + ", boostScreenBrightness=" + boostScreenBrightness
                     + ", dozeScreenBrightness=" + dozeScreenBrightness
-                    + ", dozeScreenState=" + Display.stateToString(dozeScreenState);
+                    + ", dozeScreenState=" + Display.stateToString(dozeScreenState)
+                    + ", brightnessSetByLightDim=" + brightnessSetByLightDim;
         }
 
         public static String policyToString(int policy) {
