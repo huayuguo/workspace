@@ -2,6 +2,7 @@
 #define ANDROID_AUDIO_ALSA_CAPTURE_DATA_PROVIDER_NORMAL_H
 
 #include "AudioALSACaptureDataProviderBase.h"
+#include "noise_process.h"
 
 namespace android
 {
@@ -57,6 +58,9 @@ class AudioALSACaptureDataProviderNormal : public AudioALSACaptureDataProviderBa
         bool mDCCalEnable;
         bool mDCCalBufferFull;
         AudioLock mDCCalEnableLock;
+
+		NSHandle_t *mNsHandle;
+		NSHandle_t *mNsHandle2;
 
         void copyCaptureDataToDCCalBuffer(void *buffer, size_t size);
         size_t CalulateDC(short *buffer , size_t size);

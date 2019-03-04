@@ -195,7 +195,8 @@ LOCAL_C_INCLUDES:= \
     $(MTK_PATH_SOURCE)/external/blisrc \
     $(MTK_PATH_CUSTOM)/hal/audioflinger/audio  \
     external/tinyalsa/include  \
-    external/tinycompress/include
+    external/tinycompress/include \
+    $(MTK_PATH_SOURCE)/hardware/audio/common/V3/ns/
 
 # MTK Audio Tuning Tool Version
 ifneq ($(MTK_AUDIO_TUNING_TOOL_VERSION),)
@@ -397,7 +398,8 @@ endif
 
 
 LOCAL_STATIC_LIBRARIES := \
-    libmedia_helper
+    libmedia_helper \
+    libwebrtcns
 
 ifeq ($(findstring MTK_AOSP_ENHANCEMENT,  $(COMMON_GLOBAL_CPPFLAGS)),)
     LOCAL_CFLAGS += -DMTK_BASIC_PACKAGE
@@ -663,3 +665,6 @@ endif
 
 endif
 endif
+
+include $(CLEAR_VARS)
+include $(LOCAL_PATH)/../common/V3/ns/Android.mk
