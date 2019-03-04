@@ -1,0 +1,1 @@
+gcc -Wall main.c noise_suppression.c -lm -o test -std=gnu99
