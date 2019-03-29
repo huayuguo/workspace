@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">GpsTest</string>
+    <string name="start">Start Navigation</string>
+    <string name="stop">Stop Navigation</string>
+</resources>
