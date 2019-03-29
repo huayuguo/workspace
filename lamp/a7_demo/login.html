@@ -1,0 +1,35 @@
+<html>
+	<head>		
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+	</head>
+	<h1>用户登录</h1>
+	<form action="authentication.php" method="post">
+		<table border="0" cellspacing="4">
+			<tr>
+				<td>用户名</td>
+				<td><input type="text" name="name"></td>
+			</tr>
+			<tr>
+				<td>密&nbsp&nbsp&nbsp码</td>
+				<td><input type="password" name="password"></td>
+			</tr>
+			<tr>
+				<td valign=middle>验证码</td>
+				<td valign=middle>
+					<input type="text" name="captcha">
+					<img src="image_captcha.php"  onclick="this.src='image_captcha.php?'+new Date().getTime();" width="100" height="30" valign=middle >
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<input type="submit" name="login" value="登录" style="width:80">
+					<input type="reset" value="重填" style="width:80">
+				</td>
+			</tr>
+		</table>
+		<input type="hidden" name="type" value="login"> 
+		<br>
+	</form>
+	<a href="register.html">跳转到注册页面</a>
+</html>
