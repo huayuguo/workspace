@@ -16,7 +16,16 @@ import android.widget.Switch;
 
 import com.hcn.huangchao.testdim2.R;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class MainActivity extends AppCompatActivity {
+    Timer timer = new Timer();
+    EditText wakeEdit;
+    EditText mEdit;
+    Button delayBtn;
+    Button wakeBtn;
+    Switch swEnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,16 +41,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        Button mButton = (Button) findViewById(R.id.button);
-        final EditText mEdit = (EditText) findViewById(R.id.editView);
-        Switch swEnable = findViewById(R.id.swEnable);
+        delayBtn = (Button) findViewById(R.id.delayBtn);
+        wakeBtn = (Button) findViewById(R.id.wakeBtn);
+        mEdit = (EditText) findViewById(R.id.editView);
+        wakeEdit = (EditText) findViewById(R.id.wakeEdit);
+        swEnable = findViewById(R.id.swEnable);
 
         int s =  Settings.System.getInt(getContentResolver(), "lightdim_setting", 0);
         mEdit.setText("" + s / 1000);
         int c =  Settings.System.getInt(getContentResolver(), "lightdim_onoff", 0);
         swEnable.setChecked(c == 1);
 
-        mButton.setOnClickListener(new View.OnClickListener() {
+        delayBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 /*int second = Integer.parseInt(mEdit.getText().toString());
@@ -56,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }*/
 
-                int second = Integer.parseInt(mEdit.getText().toString());
+                int second = Integer.parseInt(MainActivity.this.mEdit.getText().toString());
                 try {
                     if(second >= 0) {
                         Settings.System.putInt(getContentResolver(), "lightdim_setting", second * 1000);
@@ -64,6 +75,19 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        wakeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int second = Integer.parseInt(wakeEdit.getText().toString());
+                MainActivity.this.timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        getWindowManager().setLightDim(-1);
+                    }
+                },second * 1000);
             }
         });
 
