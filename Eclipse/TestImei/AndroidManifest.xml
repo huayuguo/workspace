@@ -1,0 +1,39 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+        package="com.android.testimei"
+        coreApp="true"
+        android:sharedUserId="android.uid.system">
+
+    <!-- M: SIM Settings, need this permission to check raido power state -->
+    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+
+
+    <application android:label="@string/app_name"
+            android:icon="@mipmap/ic_launcher"
+            android:taskAffinity=""
+            android:theme="@style/AppTheme"
+            android:hardwareAccelerated="true"
+            android:requiredForAllUsers="true"
+            android:supportsRtl="true"
+            android:allowBackup="false"
+            android:usesCleartextTraffic="true"
+            android:defaultToDeviceProtectedStorage="true"
+            android:directBootAware="true">
+
+        <!-- Settings -->
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+		
+		<activity android:name=".DialogActivity"
+			android:theme="@style/dialogstyle"
+			android:exported="true"
+		    android:process="com.android.phone">
+        </activity>
+
+    </application>
+</manifest>
