@@ -70,7 +70,7 @@ protected void verifyPasswordAndUnlock() {
 }
 通过getPasswordText从UI获取密码字符串，调用LockPatternChecker.checkPassword进行密码验证。第二个参数传递密码字符串，第四个参数传递一个回调函数，反馈验证结果。checkPassword第二个参数传递密码字符串，第四个参数传递一个回调函数，反馈验证结果。
 OnCheckCallback有三个回调接口：
-a. OnCheckCallback 密码匹配成功后回调，比onChecked先调用，加快解锁速度
+a. onEarlyMatched 密码匹配成功后回调，比onChecked先调用，加快解锁速度
 b. onChecked 密码验证完成后回调（成功\失败都会调用）
 c. onCancelled 取消校验时回调
 
