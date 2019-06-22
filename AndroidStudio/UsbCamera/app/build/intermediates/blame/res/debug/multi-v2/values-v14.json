@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v14\\values-v14.xml",
+            "outputFile": "F:\\workspace\\AndroidStudio\\UsbCamera\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v14\\values-v14.xml",
             "map": [
                 {
-                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values-v14\\styles.xml",
+                    "source": "F:\\workspace\\AndroidStudio\\UsbCamera\\app\\src\\main\\res\\values-v14\\styles.xml",
                     "from": {
                         "startLines": "7",
                         "startColumns": "4",

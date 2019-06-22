@@ -1,10 +1,27 @@
 {
     "logs": [
         {
-            "outputFile": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
+            "outputFile": "F:\\workspace\\AndroidStudio\\UsbCamera\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
             "map": [
                 {
-                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values\\strings.xml",
+                    "source": "F:\\workspace\\AndroidStudio\\UsbCamera\\app\\src\\main\\res\\values\\dimens.xml",
+                    "from": {
+                        "startLines": "3,4",
+                        "startColumns": "4,4",
+                        "startOffsets": "92,151",
+                        "endColumns": "57,55",
+                        "endOffsets": "145,202"
+                    },
+                    "to": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,113",
+                        "endColumns": "57,55",
+                        "endOffsets": "108,164"
+                    }
+                },
+                {
+                    "source": "F:\\workspace\\AndroidStudio\\UsbCamera\\app\\src\\main\\res\\values\\strings.xml",
                     "from": {
                         "startLines": "4,11,10,3,13,7,6,9,5,8,12,14,15,17,16",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -21,7 +38,7 @@
                     }
                 },
                 {
-                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values\\styles.xml",
+                    "source": "F:\\workspace\\AndroidStudio\\UsbCamera\\app\\src\\main\\res\\values\\styles.xml",
                     "from": {
                         "startLines": "6,15",
                         "startColumns": "4,4",
@@ -37,23 +54,6 @@
                         "endLines": "25,28",
                         "endColumns": "12,12",
                         "endOffsets": "1404,1564"
-                    }
-                },
-                {
-                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values\\dimens.xml",
-                    "from": {
-                        "startLines": "3,4",
-                        "startColumns": "4,4",
-                        "startOffsets": "92,151",
-                        "endColumns": "57,55",
-                        "endOffsets": "145,202"
-                    },
-                    "to": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,113",
-                        "endColumns": "57,55",
-                        "endOffsets": "108,164"
                     }
                 }
             ]

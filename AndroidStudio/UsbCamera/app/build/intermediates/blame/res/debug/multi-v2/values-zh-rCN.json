@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-zh-rCN\\values-zh-rCN.xml",
+            "outputFile": "F:\\workspace\\AndroidStudio\\UsbCamera\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-zh-rCN\\values-zh-rCN.xml",
             "map": [
                 {
-                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values-zh-rCN\\strings.xml",
+                    "source": "F:\\workspace\\AndroidStudio\\UsbCamera\\app\\src\\main\\res\\values-zh-rCN\\strings.xml",
                     "from": {
                         "startLines": "4,11,10,3,13,7,6,9,5,8,16,15,12,17,18,20,19,14",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
