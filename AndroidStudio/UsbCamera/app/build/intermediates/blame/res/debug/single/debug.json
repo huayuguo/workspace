@@ -1,0 +1,54 @@
+[
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\layout_main.xml.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\layout\\main.xml"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi_icon.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-mdpi\\icon.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi_logo_camera_color_44in48dp.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-mdpi\\logo_camera_color_44in48dp.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_ic_launcher.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-hdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_logo_camera_color_44in48dp.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-hdpi\\logo_camera_color_44in48dp.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-mdpi_ic_launcher.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-mdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-ldpi_icon.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-ldpi\\icon.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\menu_main.xml.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\menu\\main.xml"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi_ic_launcher.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-xxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi_ic_launcher.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-xhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi_logo_camera_color_44in48dp.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-xxhdpi\\logo_camera_color_44in48dp.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi_logo_camera_color_44in48dp.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-xhdpi\\logo_camera_color_44in48dp.png"
+    },
+    {
+        "merged": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi_icon.png.flat",
+        "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\drawable-hdpi\\icon.png"
+    }
+]

@@ -1,0 +1,154 @@
+{
+    "logs": [
+        {
+            "outputFile": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\values-v11_values-v11.arsc.flat",
+            "map": [
+                {
+                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values-v11\\styles.xml",
+                    "from": {
+                        "startLines": "6",
+                        "startColumns": "4",
+                        "startOffsets": "182",
+                        "endLines": "8",
+                        "endColumns": "12",
+                        "endOffsets": "333"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "4",
+                        "endColumns": "12",
+                        "endOffsets": "204"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\values-zh-rCN_values-zh-rCN.arsc.flat",
+            "map": [
+                {
+                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values-zh-rCN\\strings.xml",
+                    "from": {
+                        "startLines": "4,11,10,3,13,7,6,9,5,8,16,15,12,17,18,20,19,14",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "100,457,394,56,583,243,200,340,147,282,696,659,525,735,788,897,840,622",
+                        "endColumns": "46,67,62,43,38,38,42,53,52,57,38,36,53,48,47,50,52,36",
+                        "endOffsets": "142,520,452,95,617,277,238,389,195,335,730,691,574,779,831,943,888,654"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,102,170,233,277,316,355,398,452,505,563,602,639,693,742,790,841,894",
+                        "endColumns": "46,67,62,43,38,38,42,53,52,57,38,36,53,48,47,50,52,36",
+                        "endOffsets": "97,165,228,272,311,350,393,447,500,558,597,634,688,737,785,836,889,926"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\values-v14_values-v14.arsc.flat",
+            "map": [
+                {
+                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values-v14\\styles.xml",
+                    "from": {
+                        "startLines": "7",
+                        "startColumns": "4",
+                        "startOffsets": "225",
+                        "endLines": "9",
+                        "endColumns": "12",
+                        "endOffsets": "376"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "4",
+                        "endColumns": "12",
+                        "endOffsets": "204"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\values_values.arsc.flat",
+            "map": [
+                {
+                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "4,11,10,3,13,7,6,9,5,8,12,14,15,17,16",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "103,532,443,56,707,255,209,367,156,299,629,755,819,946,881",
+                        "endColumns": "52,96,88,46,43,43,45,75,52,67,73,59,57,56,60",
+                        "endOffsets": "151,624,527,98,746,294,250,438,204,362,698,810,872,998,937"
+                    },
+                    "to": {
+                        "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "169,222,319,408,455,499,543,589,665,718,786,860,920,978,1035",
+                        "endColumns": "52,96,88,46,43,43,45,75,52,67,73,59,57,56,60",
+                        "endOffsets": "217,314,403,450,494,538,584,660,713,781,855,915,973,1030,1091"
+                    }
+                },
+                {
+                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values\\styles.xml",
+                    "from": {
+                        "startLines": "6,15",
+                        "startColumns": "4,4",
+                        "startOffsets": "192,547",
+                        "endLines": "12,17",
+                        "endColumns": "12,12",
+                        "endOffsets": "506,704"
+                    },
+                    "to": {
+                        "startLines": "19,26",
+                        "startColumns": "4,4",
+                        "startOffsets": "1096,1409",
+                        "endLines": "25,28",
+                        "endColumns": "12,12",
+                        "endOffsets": "1404,1564"
+                    }
+                },
+                {
+                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values\\dimens.xml",
+                    "from": {
+                        "startLines": "3,4",
+                        "startColumns": "4,4",
+                        "startOffsets": "92,151",
+                        "endColumns": "57,55",
+                        "endOffsets": "145,202"
+                    },
+                    "to": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,113",
+                        "endColumns": "57,55",
+                        "endOffsets": "108,164"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "F:\\workspace\\UsbCamera\\app\\build\\intermediates\\res\\merged\\debug\\values-sw720dp-land-v13_values-sw720dp-land-v13.arsc.flat",
+            "map": [
+                {
+                    "source": "F:\\workspace\\UsbCamera\\app\\src\\main\\res\\values-sw720dp-land\\dimens.xml",
+                    "from": {
+                        "startLines": "6",
+                        "startColumns": "4",
+                        "startOffsets": "205",
+                        "endColumns": "58",
+                        "endOffsets": "259"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "58",
+                        "endOffsets": "109"
+                    }
+                }
+            ]
+        }
+    ]
+}

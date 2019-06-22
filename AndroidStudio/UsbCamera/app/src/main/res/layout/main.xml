@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	>
+	<RelativeLayout
+		android:id="@+id/controlPanel"
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"
+        android:layout_marginRight="10dp"
+		android:layout_alignParentRight="true">
+         
+		<FrameLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentTop="true"
+			android:layout_marginTop="100dp">
+			<Button
+				android:id="@+id/captureButton"
+				android:layout_width="120dp"
+				android:layout_height="wrap_content"
+				android:text="@string/capture" />
+    	 	
+			<Button android:id="@+id/recordingButton"
+				android:layout_width="120dp"
+				android:layout_height="wrap_content"
+				android:text="@string/start_recording" />
+
+		</FrameLayout>
+    	 
+		<Button
+			android:id="@+id/switcherButton"
+			android:layout_width="120dp"
+			android:layout_height="wrap_content"
+			android:layout_alignParentBottom="true"
+			android:layout_marginBottom="100dp"
+			android:text="@string/switch_to_recording"/>
+    	    
+    </RelativeLayout>
+    
+	 <com.camera.usbcamera.CameraPreview
+		android:id="@+id/cp"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android_layout_toLeftOf="@id/controlPanel"
+		android:layout_marginRight="140dp"
+		/>
+</RelativeLayout>
