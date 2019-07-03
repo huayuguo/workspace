@@ -1,4 +1,4 @@
-package com.hcn.huangchao.testpressure;
+package com.hcn.huangchao.testsensor;
 
 import org.junit.Test;
 

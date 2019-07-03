@@ -1,3 +1,78 @@
 <resources>
-    <string name="app_name">TestPressure</string>
+    <string name="app_name">TestSensor</string>
+    <string name="title_sensor_list">Sensor List</string>
+    <string name="title_1">Accelerometer</string>
+    <string name="title_2">Magnetic</string>
+    <string name="title_3">Orientation</string>
+    <string name="title_4">Gyroscope</string>
+    <string name="title_5">Light</string>
+    <string name="title_6">Pressure</string>
+    <string name="title_7">Temperature</string>
+    <string name="title_8">Proximity</string>
+    <string name="title_9">Gravity</string>
+    <string name="title_10">Linear Acceleration</string>
+    <string name="title_11">Rotation Vector</string>
+    <string name="title_12">Relative Humidity</string>
+    <string name="title_13">Ambient Temperature</string>
+    <string name="title_14">Magnetic Field Uncalibrated</string>
+    <string name="title_15">Game Rotation Vector</string>
+    <string name="title_16">Gyroscope Uncalibrated</string>
+    <string name="title_17">Significant Motion</string>
+    <string name="title_18">Step Detector </string>
+    <string name="title_19">Step Counter</string>
+    <string name="title_20">Geomagnetic Rotation Vector</string>
+    <string name="title_21">Heart Rate </string>
+    <string name="title_22">Tilt Detector</string>
+    <string name="title_23">Wake Gesture</string>
+    <string name="title_24">Glance Gesture </string>
+    <string name="title_25">Pick Up Gesture</string>
+    <string name="title_26">Wrist Tilt Gesture</string>
+    <string name="title_27">Device Orientation </string>
+    <string name="title_28">Pose 6dof</string>
+    <string name="title_29">Stationary Detect</string>
+    <string name="title_30">Motion Detect </string>
+    <string name="title_31">Heart Beat</string>
+    <string name="title_32">Dynamic Sensor Meta</string>
+    <string name="title_34">Low Latency Offbody Detect </string>
+    <string name="title_35">Accelerometer Uncalibrated</string>
+
+    <string-array name="main_tiles">
+        <item></item>
+        <item>Accelerometer</item>
+        <item>Magnetic</item>
+        <item>Orientation</item>
+        <item>Gyroscope</item>
+        <item>Light</item>
+        <item>Pressure</item>
+        <item>Temperature</item>
+        <item>Proximity</item>
+        <item>Gravity</item>
+        <item>Linear Acceleration</item>
+        <item>Rotation Vector</item>
+        <item>Relative Humidity</item>
+        <item>Ambient Temperature</item>
+        <item>Magnetic Field Uncalibrated</item>
+        <item>Game Rotation Vector</item>
+        <item>Gyroscope Uncalibrated</item>
+        <item>Significant Motion</item>
+        <item>Step Detector </item>
+        <item>Step Counter</item>
+        <item>Geomagnetic Rotation Vector</item>
+        <item>Heart Rate </item>
+        <item>Tilt Detector</item>
+        <item>Wake Gesture</item>
+        <item>Glance Gesture </item>
+        <item>Pick Up Gesture</item>
+        <item>Wrist Tilt Gesture</item>
+        <item>Device Orientation </item>
+        <item>Pose 6dof</item>
+        <item>Stationary Detect</item>
+        <item>Motion Detect </item>
+        <item>Heart Beat</item>
+        <item>Dynamic Sensor Meta</item>
+        <item></item>>
+        <item>Low Latency Offbody Detect </item>
+        <item>Accelerometer Uncalibrated</item>
+    </string-array>
+
 </resources>

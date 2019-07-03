@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.hcn.huangchao.testpressure">
+    package="com.hcn.huangchao.testsensor">
 
     <application
         android:allowBackup="true"

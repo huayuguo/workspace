@@ -1,4 +1,4 @@
-package com.hcn.huangchao.testpressure;
+package com.hcn.huangchao.testsensor;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.hcn.huangchao.testpressure", appContext.getPackageName());
+        assertEquals("com.hcn.huangchao.testsensor", appContext.getPackageName());
     }
 }
