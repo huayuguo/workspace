@@ -528,7 +528,7 @@ handleReturnBuffers(Vector<ImgBufQueNode>const& rvQueNode)
         //
         if(mpExtImgProc != NULL)
         {
-            if(mpExtImgProc->getImgMask() & ExtImgProc::BufType_Record)
+            if((mpExtImgProc->getImgMask() & ExtImgProc::BufType_Record) && (mpParamsMgr->getOpenId() == 0))
             {
                 IExtImgProc::ImgInfo img;
                 //

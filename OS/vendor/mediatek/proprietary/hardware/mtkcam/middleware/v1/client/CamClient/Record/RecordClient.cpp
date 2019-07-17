@@ -176,6 +176,11 @@ init()
     }
     //
     //
+	mpExtImgProc = ExtImgProc::createInstance();
+	if(mpExtImgProc != NULL)
+	{
+		mpExtImgProc->init();
+	}	
     ret = true;
 lbExit:
     MY_LOGD("-");
@@ -259,6 +264,14 @@ uninit()
     //To prevent that user CAMERA_CMD_GET_REC_BUF_INFO but not start and stop recording.
     uninitBuffers();
     //
+	//
+	if(mpExtImgProc != NULL)
+	{
+		mpExtImgProc->uninit();
+		mpExtImgProc->destroyInstance();
+		mpExtImgProc = NULL;
+	}
+	//    
     MY_LOGD("-");
     return  true;
 }
@@ -503,6 +516,15 @@ startRecording()
                 mExtraRecBufNum,
                 mRecBufNum+mExtraRecBufNum);
     }
+	//
+	{
+		MUINT32 u4ImgMask = 0;
+		u4ImgMask = ExtImgProc::BufType_Record;
+		MY_LOGD(" ---- u4ImgMask(0x%x)", u4ImgMask);
+		mpExtImgProc->setImgMask(u4ImgMask);
+	}    
+    ret = onStateChanged();
+    //
     //
 lbExit:
     //

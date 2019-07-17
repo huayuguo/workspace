@@ -40,6 +40,7 @@ include $(CLEAR_VARS)
 -include $(MTK_PATH_SOURCE)/hardware/mtkcam/mtkcam.mk
 
 LOCAL_SRC_FILES := ./ExtImgProcImp.cpp \
+					utilities.c
 #
 LOCAL_C_INCLUDES += $(TOP)/$(MTK_PATH_SOURCE)/hardware/include
 LOCAL_C_INCLUDES += $(MTKCAM_C_INCLUDES)

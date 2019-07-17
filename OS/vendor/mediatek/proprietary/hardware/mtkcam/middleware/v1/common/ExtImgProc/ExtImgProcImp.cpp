@@ -11,6 +11,7 @@ using namespace android;
 #include <mtkcam/middleware/v1/ExtImgProc/IExtImgProc.h>
 #include <mtkcam/middleware/v1/ExtImgProc/ExtImgProc.h>
 #include <ExtImgProcImp.h>
+#include "utilities.h"
 //-----------------------------------------------------------------------------
 #define MY_LOGD(fmt, arg...)        CAM_LOGD("(%d)[%s]"             fmt, ::gettid(), __FUNCTION__,           ##arg)
 #define MY_LOGW(fmt, arg...)        CAM_LOGW("(%d)[%s]WRN(%5d):"    fmt, ::gettid(), __FUNCTION__, __LINE__, ##arg)
@@ -24,6 +25,10 @@ using namespace android;
 #define FUNCTION_IN                 MY_LOGD("+")
 #define FUNCTION_OUT                MY_LOGD("-")
 //-----------------------------------------------------------------------------
+
+static struct YuvFrame yuv_frame;
+YuvVideoFrame ExtImgProcImp::yuv_video_frame = &yuv_frame;
+
 ExtImgProc*
 ExtImgProc::
 createInstance(void)
@@ -52,6 +57,7 @@ ExtImgProcImp()
     //Set which img buf you want to process.
     //For example: mImgMask = BufType_Display|BufType_Record;
     mImgMask = 0;
+    mUser = 0;
 }
 //-----------------------------------------------------------------------------
 ExtImgProcImp::
@@ -80,7 +86,14 @@ init(void)
     }
     //Add init code
     //[BEGIN]
-
+    /*yuv_video_frame = (YuvVideoFrame)malloc(sizeof(struct YuvFrame));
+    if(NULL == yuv_video_frame)
+    {
+        MY_LOGD("run out of memory\n");
+		Result = -1;
+        goto EXIT;
+    }*/
+	InitializeNumColorInfo(RED, &num_color_info);
     //[END]
     //
     android_atomic_inc(&mUser);
@@ -116,7 +129,8 @@ uninit(void)
     }
     //Add uninit code
     //[BEGIN]
-
+    /*if(yuv_video_frame)
+		free(yuv_video_frame);*/
     //[END]
     EXIT:
     return Result;
@@ -171,21 +185,29 @@ doImgProc(ImgInfo& img)
         case BufType_Display:
         {
             //[BEGIN]
-
+			MY_LOGD("---- Water Mark -- for Display ---- ");
+			//AddTimeInYuvVideo_r(t, mark_x, mark_y, line_info, num_color_info, yuv_video_frame);
             //[END]
             break;
         }
         case BufType_PreviewCB:
         {
             //[BEGIN]
-
+			ALOGE("---- Water Mark -- for PreviewCB ----"); 
             //[END]
             break;
         }
         case BufType_Record:
         {
             //[BEGIN]
-
+			InitializeFrame(img.width, img.height, img.format, (uchar *)img.virtAddr, yuv_video_frame);
+			InitializeLineAndPositionInfo_r(img.width, img.height, LeftTop, &line_info, &mark_x, &mark_y);
+			time_t timer;
+			struct tm* t;
+			time(&timer);
+			t = localtime(&timer);
+			AddTimeInYuvVideo_r(t, mark_x, mark_y, line_info, num_color_info, yuv_video_frame);
+			MY_LOGD("---- Water Mark -- for record ---- ");
             //[END]
             break;
         }
@@ -200,4 +222,13 @@ doImgProc(ImgInfo& img)
     return Result;
 }
 
+MBOOL
+ExtImgProcImp::
+setImgMask(MUINT32 u4ImgMask)
+{
+	Mutex::Autolock lock(mLock);
+	//
+	mImgMask = u4ImgMask;
+	return MTRUE;
+}
 
